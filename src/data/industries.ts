@@ -1,0 +1,197 @@
+/**
+ * 産業データ（フェーズ1: 四国＋岡山）。
+ *
+ * scale（産業規模）と profitRate（利益率）は実態準拠で設定し、
+ * 人為的な相関は付けない（仕様書 決定8）。そのため装置産業は
+ * 「規模は巨大だが利益率は低い」、特産品は「規模は小さいが利益率は高い」
+ * という現実の姿がそのまま現れる。
+ *
+ * fame は全国的に有名な産業にのみ付く。rank <= 3 が「全国ベスト3」の判定対象。
+ * rank 4 以上の産業は「知名度はあるがベスト3ではない」枠として機能する。
+ */
+
+import type { CategoryId, Industry, Sector } from './types';
+
+/** fame を持たない産業。 */
+const i = (
+  id: string,
+  name: string,
+  sector: Sector,
+  scale: number,
+  profitRate: number,
+): Industry => ({ id, name, sector, scale, profitRate });
+
+/** fame を持つ全国区産業。 */
+const f = (
+  id: string,
+  name: string,
+  sector: Sector,
+  scale: number,
+  profitRate: number,
+  categoryId: CategoryId,
+  rank: number,
+  score: number,
+): Industry => ({ id, name, sector, scale, profitRate, fame: { categoryId, rank, score } });
+
+export const INDUSTRIES: Industry[] = [
+  // ── 岡山県 ──
+  f('okayama-muscat', 'マスカット', 1, 22, 28, 'muscat', 3, 70),
+  f('okayama-peach', '白桃', 1, 18, 26, 'peach', 4, 65),
+  i('okayama-retail', '商業', 3, 82, 5),
+  i('omoto-machinery', '機械工業', 2, 34, 9),
+  i('nishiichi-vegetables', '野菜', 1, 9, 17),
+  i('senoo-rice', '米', 1, 8, 13),
+  i('mishima-greenhouse', '施設園芸', 1, 11, 20),
+  f('hayashima-igusa', 'い草・花むしろ', 2, 6, 24, 'igusa', 3, 40),
+  i('kugubara-rice', '米', 1, 7, 13),
+  i('chayamachi-logistics', '物流', 3, 26, 6),
+  i('uematsu-vegetables', '野菜', 1, 8, 16),
+  i('kimi-fruit', '果樹', 1, 10, 19),
+  i('kaminocho-rice', '米', 1, 7, 12),
+  f('kojima-denim', '国産ジーンズ', 2, 38, 16, 'denim', 1, 85),
+  f('kojima-uniform', '学生服', 2, 29, 12, 'uniform', 1, 75),
+
+  // ── 香川県（予讃線） ──
+  f('takamatsu-udon', '讃岐うどん', 2, 44, 18, 'udon', 1, 95),
+  i('takamatsu-port', '港湾物流', 3, 58, 6),
+  i('takamatsu-retail', '商業', 3, 76, 5),
+  i('kozai-fishery', '沿岸漁業', 1, 7, 15),
+  f('kinashi-bonsai', '松盆栽', 1, 8, 42, 'bonsai', 1, 70),
+  i('hashioka-rice', '米', 1, 8, 13),
+  i('kokubu-heritage', '史跡観光', 3, 6, 22),
+  i('fuchu-rice', '米', 1, 7, 13),
+  i('kamogawa-vegetables', '野菜', 1, 9, 17),
+  i('yasoba-tokoroten', 'ところてん', 2, 3, 30),
+  f('sakaide-salt', '塩', 2, 24, 11, 'salt', 1, 60),
+  i('sakaide-petrochem', '石油化学', 2, 88, 4),
+  i('utazu-tower', 'タワー観光', 3, 12, 21),
+  f('marugame-uchiwa', '丸亀うちわ', 2, 9, 27, 'uchiwa', 1, 75),
+  i('marugame-castle', '丸亀城観光', 3, 16, 23),
+  i('shioya-rice', '米', 1, 6, 13),
+  i('tadotsu-railway', '鉄道車両整備', 2, 21, 8),
+  i('tadotsu-shipbuilding', '造船', 2, 33, 7),
+  i('kaiganji-temple', '寺社観光', 3, 5, 24),
+  f('takuma-nori', '海苔養殖', 1, 13, 19, 'nori', 4, 30),
+  i('mino-lotus', 'れんこん', 1, 10, 20),
+  i('takase-tea', '高瀬茶', 1, 5, 26),
+  i('hijidai-rice', '米', 1, 6, 13),
+  i('motoyama-strawberry', 'いちご', 1, 12, 24),
+  i('kanonji-zenigata', '銭形砂絵観光', 3, 14, 25),
+  i('kanonji-paper', '製紙', 2, 31, 8),
+  i('toyohama-chrysanthemum', '菊栽培', 1, 8, 21),
+  i('minoura-fishery', '漁業', 1, 5, 16),
+
+  // ── 愛媛県（予讃線） ──
+  f('kawanoe-paper', '洋紙・板紙', 2, 92, 6, 'paper', 1, 80),
+  f('mishima-householdpaper', '家庭紙', 2, 74, 9, 'householdpaper', 1, 70),
+  i('sangawa-rice', '米', 1, 6, 13),
+  i('akaboshi-vegetables', '野菜', 1, 8, 17),
+  i('doi-taro', '里芋', 1, 9, 20),
+  i('sekigawa-rice', '米', 1, 5, 12),
+  i('takihama-chemical', '化学工業', 2, 27, 8),
+  f('niihama-nonferrous', '非鉄金属精錬', 2, 95, 5, 'nonferrous', 1, 65),
+  i('niihama-machinery', '産業機械', 2, 52, 10),
+  i('nakahagi-rice', '米', 1, 6, 13),
+  f('saijo-water', '名水うちぬき', 1, 4, 35, 'meisui', 1, 60),
+  i('saijo-semiconductor', '半導体製造装置', 2, 61, 13),
+  i('ishizuchi-tourism', '石鎚山観光', 3, 9, 27),
+  i('himi-rice', '米', 1, 5, 12),
+  i('komatsu-persimmon', '柿', 1, 7, 19),
+  i('tamanoe-vegetables', '野菜', 1, 7, 17),
+  i('nyugawa-shipbuilding', '造船', 2, 46, 7),
+  i('miyoshi-rice', '米', 1, 6, 13),
+  i('tomita-rice', '米', 1, 6, 12),
+  i('sakurai-lacquerware', '桜井漆器', 2, 4, 33),
+  f('imabari-towel', '今治タオル', 2, 43, 14, 'towel', 1, 95),
+  f('imabari-shipbuilding', '造船', 2, 79, 6, 'shipbuilding', 1, 85),
+  i('imabari-yakitori', '焼豚玉子飯', 3, 6, 26),
+  i('hashihama-shipyard', '造船所', 2, 37, 7),
+  f('namikata-shipowner', '海運船主業', 3, 30, 19, 'shipowner', 1, 55),
+  f('onishi-stone', '大島石', 2, 8, 24, 'stone', 2, 50),
+  i('kameoka-rice', '米', 1, 5, 12),
+  f('kikuma-tile', '菊間瓦', 2, 6, 25, 'tile', 3, 45),
+  i('kikuma-refinery', '石油精製', 2, 69, 3),
+  i('asanami-mandarin', 'みかん', 1, 11, 21),
+  i('oura-fishery', '漁業', 1, 3, 17),
+  i('awai-mandarin', 'みかん', 1, 10, 21),
+  i('koyodai-beach', '海水浴観光', 3, 5, 23),
+  i('hojo-kashima', '鹿島観光', 3, 7, 24),
+  i('hojo-rice', '米', 1, 6, 13),
+  i('yanagihara-fishery', '漁業', 1, 4, 16),
+  i('horie-port', '港湾', 3, 11, 9),
+  i('wake-mandarin', 'みかん', 1, 10, 21),
+  i('mitsuhama-fishmarket', '魚市場', 3, 19, 8),
+  i('mitsuhama-yaki', '三津浜焼き', 3, 4, 28),
+  f('matsuyama-dogo', '道後温泉観光', 3, 57, 24, 'historic-onsen', 1, 95),
+  f('matsuyama-mandarin', '温州みかん', 1, 36, 18, 'mandarin', 2, 90),
+  i('matsuyama-retail', '商業', 3, 80, 5),
+  i('ichitsubo-stadium', '球場興行', 3, 4, 20),
+  i('kitaiyo-rice', '米', 1, 6, 13),
+  i('minamiiyo-logistics', '物流', 3, 17, 7),
+  i('yokota-vegetables', '野菜', 1, 7, 17),
+  i('torinoki-rice', '米', 1, 5, 12),
+  f('iyoshi-katsuobushi', '削り節', 2, 22, 15, 'katsuobushi', 1, 60),
+  i('iyoshi-kamaboko', 'かまぼこ', 2, 14, 13),
+
+  // ── 土讃線 ──
+  i('kanzoji-rice', '米', 1, 6, 13),
+  i('zentsuji-temple', '善通寺観光', 3, 18, 25),
+  i('zentsuji-vegetables', '野菜', 1, 9, 18),
+  i('kotohira-konpira', '金刀比羅宮観光', 3, 41, 29),
+  i('kotohira-sake', '地酒', 2, 7, 22),
+  i('shioiri-forestry', '林業', 1, 3, 11),
+  i('kurokawa-forestry', '林業', 1, 2, 11),
+  i('saida-shiitake', 'しいたけ', 1, 5, 23),
+  i('tsubojiri-switchback', '秘境駅観光', 3, 1, 48),
+  i('hashikura-temple', '箸蔵寺観光', 3, 6, 26),
+  i('tsukuda-rice', '米', 1, 5, 12),
+  f('ikeda-tobacco', '葉たばこ', 1, 7, 22, 'tobacco', 3, 40),
+  i('ikeda-iya', '祖谷観光', 3, 23, 27),
+
+  // ── 高徳線 ──
+  i('showacho-print', '印刷業', 2, 13, 10),
+  i('kitaguchi-crafts', '讃岐漆器工房', 2, 4, 31),
+  f('ritsurin-garden', '栗林公園観光', 3, 28, 26, 'garden', 1, 80),
+  i('kitacho-vegetables', '野菜', 1, 8, 17),
+  i('yashima-tourism', '屋島観光', 3, 20, 24),
+  i('furutakamatsu-rice', '米', 1, 6, 13),
+  i('yakuri-temple', '八栗寺観光', 3, 7, 25),
+  f('mure-stone', '庵治石', 2, 11, 26, 'stone', 1, 65),
+  i('shido-lacquer', '讃岐漆芸', 2, 5, 30),
+  i('shido-fishery', '漁業', 1, 8, 16),
+  i('orangetown-housing', '住宅開発', 3, 9, 12),
+  i('zoda-rice', '米', 1, 6, 13),
+  i('kanzaki-vegetables', '野菜', 1, 7, 17),
+  i('tsuda-pine', '津田の松原観光', 3, 8, 23),
+  i('tsuruwa-fishery', '漁業', 1, 4, 16),
+  i('nibu-mandarin', 'みかん', 1, 8, 20),
+  f('sanbonmatsu-wasanbon', '和三盆', 2, 5, 34, 'wasanbon', 1, 65),
+  f('shiroto-glove', '手袋', 2, 17, 16, 'glove', 1, 70),
+  f('hiketa-hamachi', 'ハマチ養殖', 1, 15, 18, 'buri', 4, 35),
+  i('hiketa-soy', '醤油', 2, 9, 19),
+  i('aioi-rice', '米', 1, 5, 12),
+  i('omiya-forestry', '林業', 1, 3, 11),
+  f('itano-lotus', 'れんこん', 1, 19, 21, 'lotus', 2, 55),
+  i('kawabata-vegetables', '野菜', 1, 7, 17),
+  i('bando-beethoven', '第九のふるさと観光', 3, 5, 25),
+  i('iketani-sweetpotato', 'なると金時', 1, 21, 23),
+  i('shozui-greenonion', '青ねぎ', 1, 12, 22),
+  i('yoshinari-rice', '米', 1, 6, 13),
+  i('sako-sake', '地酒', 2, 8, 21),
+  f('tokushima-sudachi', 'すだち', 1, 14, 30, 'sudachi', 1, 85),
+  f('tokushima-led', 'LED', 2, 72, 21, 'led', 1, 75),
+  f('tokushima-awaodori', '阿波おどり観光', 3, 39, 28, 'matsuri', 1, 95),
+
+  // ── 鳴門線 ──
+  i('otani-pottery', '大谷焼', 2, 3, 29),
+  i('tatemichi-rice', '米', 1, 5, 12),
+  i('kyokaimae-vegetables', '野菜', 1, 4, 17),
+  i('konpiramae-rice', '米', 1, 4, 12),
+  i('muya-salt', '鳴門塩', 2, 10, 20),
+  f('naruto-wakame', '鳴門わかめ', 1, 17, 31, 'wakame', 3, 85),
+  f('naruto-whirlpool', '渦潮観光', 3, 26, 27, 'chouryu', 1, 80),
+];
+
+export const INDUSTRY_MAP: Record<string, Industry> = Object.fromEntries(
+  INDUSTRIES.map((x) => [x.id, x]),
+);
