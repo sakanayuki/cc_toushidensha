@@ -97,7 +97,7 @@ describe('trophyValue', () => {
     expect(trophyValue('distance', player(0, []), data)).toBe(0);
   });
 
-  it('節約王は交通費の合計', () => {
+  it('交通費節約王は交通費の合計', () => {
     expect(trophyValue('fare_min', player(0, [], { fareTotal: 123 }), data)).toBe(123);
   });
 });

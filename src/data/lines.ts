@@ -281,12 +281,16 @@ export const LINES: Line[] = [
         'tamatsukuri', 'tsuruhashi', 'momodani', 'teradacho', 'tennoji', 'shinimamiya',
         'imamiya', 'ashiharabashi', 'taisho', 'bentencho', 'nishikujo', 'noda', 'fukushima',
       ],
-      // 大和路快速・関空快速などが環状線内で通過運転をする区間の停車駅。
+      // 紀州路快速・関空快速・大和路快速は環状線内では各駅に停まるが、
+      // 本ゲームでは「急行は主要駅のみ」という抽象化に揃え、
+      // 環状線を横断する乗客から見た主要停車駅だけを拾う。
       express: [
         'osaka', 'kyobashi', 'tsuruhashi', 'tennoji', 'shinimamiya', 'bentencho',
         'nishikujo', 'fukushima',
       ],
-      ltd: [],
+      // くろしお・はるか。梅田貨物線経由でうめきた地下ホーム（大阪）に停まり、
+      // 環状線内は通過して天王寺へ抜ける。ここが阪和線・南海方面への特急の入口になる。
+      ltd: ['osaka', 'tennoji'],
       shinkansen: [],
     },
   },

@@ -234,6 +234,25 @@ describe('実データでの移動', () => {
     expect(reach.map((o) => o.stationId)).toContain('shinosaka');
   });
 
+  it('大阪から特急に乗ると環状線経由で天王寺・阪和線方面へ抜けられる', () => {
+    // くろしお・はるかが大阪（うめきた地下ホーム）に停まり、環状線内を通過して天王寺へ抜ける。
+    // これが無いと、大阪スタートの特急は神戸方面にしか行けず、阪和線・南海本線に辿り着けない。
+    const names = (steps: number) =>
+      findReachable(graphs.ltd, 'osaka', steps, 'ltd').map((o) => o.stationId);
+    expect(names(1)).toContain('tennoji');
+    expect(names(2)).toContain('hineno');
+    expect(names(3)).toContain('wakayama');
+  });
+
+  it('大阪から急行に乗ると環状線経由で新今宮・南海本線方面へ抜けられる', () => {
+    const names = (steps: number) =>
+      findReachable(graphs.express, 'osaka', steps, 'express').map((o) => o.stationId);
+    expect(names(3)).toContain('tennoji');
+    expect(names(4)).toContain('shinimamiya');
+    // 新今宮から南海本線の急行に乗り継いで難波・天下茶屋へ。
+    expect(names(5)).toContain('nankai-namba');
+  });
+
   it('岡山〜広島は在来線特急では移動できず、新幹線なら数駅で着く', () => {
     // 山陽本線に定期特急が走っていないことがグラフに出ている。
     expect(availableTypes(graphs, 'hiroshima')).not.toContain('ltd');
