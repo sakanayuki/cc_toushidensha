@@ -66,23 +66,20 @@ const css = `/*
  *
  * ソースカラー: ${SOURCE}
  * スキーム: SchemeExpressive
+ *
+ * ライトを既定とし、端末が prefers-color-scheme: dark でもライトのまま表示する。
+ * 地図と路線を見るゲームなので、明るい地の上のほうが線と駅を追いやすいため。
+ * ダークにするときは <html data-theme="dark"> を明示する。
  */
 
 :root {
-${scheme(true)}
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-${scheme(false)
-  .split('\n')
-  .map((line) => `  ${line}`)
-  .join('\n')}
-  }
-}
-
-:root[data-theme='light'] {
+  color-scheme: light;
 ${scheme(false)}
+}
+
+:root[data-theme='dark'] {
+  color-scheme: dark;
+${scheme(true)}
 }
 `;
 

@@ -219,6 +219,13 @@ button {
    ここで地図用のセマンティックな名前に束ねる。 */
 
 :root {
+  /* ライト（既定）: 海は tertiary-container の淡い青、陸は最も明るい面。 */
+  --map-sea: var(--md-sys-color-tertiary-container);
+  --map-land: var(--md-sys-color-surface-bright);
+  --map-border: var(--md-sys-color-outline-variant);
+}
+
+:root[data-theme='dark'] {
   /* ダーク: 海は tertiary を沈めた暗い青、陸はひとつ持ち上げた面。 */
   --map-sea: color-mix(
     in srgb,
@@ -226,20 +233,6 @@ button {
     var(--md-sys-color-surface-container-lowest)
   );
   --map-land: var(--md-sys-color-surface-container-high);
-  --map-border: var(--md-sys-color-outline-variant);
-}
-
-@media (prefers-color-scheme: light) {
-  :root:not([data-theme='dark']) {
-    /* ライト: 海は tertiary-container の淡い青、陸は最も明るい面。 */
-    --map-sea: var(--md-sys-color-tertiary-container);
-    --map-land: var(--md-sys-color-surface-bright);
-  }
-}
-
-:root[data-theme='light'] {
-  --map-sea: var(--md-sys-color-tertiary-container);
-  --map-land: var(--md-sys-color-surface-bright);
 }
 
 /* ── 地図 ── */

@@ -155,31 +155,41 @@ export function MapView({
 
   const [view, setView] = useState<Box>(fullBox);
   const [followFocus, setFollowFocus] = useState(true);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  /**
+   * 収めたい範囲を、画面と同じ縦横比の viewBox に広げる。
+   * SVG は viewBox 全体が収まるように縮小するので、比率を合わせておかないと
+   * 短い辺に合わせて縮み、長い辺の端が画面の外に出てしまう。
+   */
+  const fitToScreen = useCallback((box: Box, minSize: number): Box => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    const aspect = rect && rect.height > 0 ? rect.width / rect.height : 1;
+    let w = Math.max(box.w, minSize);
+    let h = Math.max(box.h, minSize);
+    if (w / h < aspect) w = h * aspect;
+    else h = w / aspect;
+    return { x: box.x + box.w / 2 - w / 2, y: box.y + box.h / 2 - h / 2, w, h };
+  }, []);
 
   /** 現在地と到達可能駅がすべて収まるように寄せる。 */
   const focusView = useCallback(() => {
     const ids = [focusStationId, ...targets].filter((x): x is StationId => x !== null);
     const pts = ids.map((id) => points.get(id)).filter((p): p is { x: number; y: number } => !!p);
     if (pts.length === 0) return;
-    const box = boxOf(pts, 25);
+    const bare = boxOf(pts, 0);
+    // 余白は対象範囲に比例させる。端の駅がラベルごと画面に入るだけの幅を取る。
+    const pad = Math.max(60, Math.max(bare.w, bare.h) * 0.18);
     // 狭すぎると拡大しすぎて周辺の路線が見えなくなるので下限を設ける。
     // 経度1度が 1000 単位なので、300 単位で 30km 弱の視野になる。
-    const w = Math.max(box.w, 300);
-    const h = Math.max(box.h, 300);
-    setView({
-      x: box.x + box.w / 2 - w / 2,
-      y: box.y + box.h / 2 - h / 2,
-      w,
-      h,
-    });
-  }, [focusStationId, targets, points]);
+    setView(fitToScreen(boxOf(pts, pad), 300));
+  }, [focusStationId, targets, points, fitToScreen]);
 
   useEffect(() => {
     if (followFocus) focusView();
   }, [followFocus, focusView]);
 
   // ── パンとピンチズーム ──
-  const svgRef = useRef<SVGSVGElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{ view: Box; dist: number } | null>(null);
 
@@ -392,20 +402,29 @@ export function MapView({
           if (!p) return null;
           return (
             <g key={`t-${id}`} onClick={() => onSelect?.(id)} style={{ cursor: 'pointer' }}>
+              {/* 外側は脈動させて目を引く。 */}
               <circle
                 className="target-ring"
                 cx={p.x}
                 cy={p.y}
-                r={unit * 2.2}
+                r={unit * 2.4}
                 fill="none"
                 stroke="var(--md-sys-color-primary)"
-                strokeWidth={unit * 0.6}
+                strokeWidth={unit * 0.5}
               />
-              {/* 輪が薄くなる瞬間にも位置が分かるよう、中心にも印を置く。 */}
+              {/* 内側は常に不透明。脈動が薄くなる瞬間も位置を見失わせない。 */}
               <circle
                 cx={p.x}
                 cy={p.y}
-                r={unit * 0.9}
+                r={unit * 1.6}
+                fill="none"
+                stroke="var(--md-sys-color-primary)"
+                strokeWidth={unit * 0.55}
+              />
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={unit * 0.85}
                 fill="var(--md-sys-color-primary)"
                 stroke="var(--md-sys-color-on-primary)"
                 strokeWidth={unit * 0.2}
@@ -473,7 +492,7 @@ export function MapView({
           className="md-icon-button md-ripple"
           onClick={() => {
             setFollowFocus(false);
-            setView(fullBox);
+            setView(fitToScreen(fullBox, 300));
           }}
           aria-label="全体を表示"
         >
