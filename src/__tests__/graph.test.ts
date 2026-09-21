@@ -198,6 +198,35 @@ describe('実データでの移動', () => {
     expect(around.map((o) => o.stationId)).toContain('tennoji');
   });
 
+  it('阪和線と南海本線が既存の路線と繋がっている', () => {
+    // 阪和線は天王寺で、南海本線は新今宮で、それぞれ大阪環状線と同じ駅を共有する。
+    const fromTennoji = (graphs.local.get('tennoji') ?? []).map((e) => e.lineId);
+    expect(fromTennoji).toContain('hanwa');
+    expect(fromTennoji).toContain('osaka-loop');
+    const fromShinimamiya = (graphs.local.get('shinimamiya') ?? []).map((e) => e.lineId);
+    expect(fromShinimamiya).toContain('nankai');
+    expect(fromShinimamiya).toContain('osaka-loop');
+  });
+
+  it('大阪から和歌山へ、JR と南海の2経路で行ける', () => {
+    // どちらも特急が走っている。JR はくろしお、南海はサザン。
+    expect(availableTypes(graphs, 'wakayama')).toContain('ltd');
+    expect(availableTypes(graphs, 'nankai-wakayamashi')).toContain('ltd');
+    // 普通列車のグラフ上で、大阪から和歌山・和歌山市の双方に到達できる。
+    const seen = new Set<string>(['osaka']);
+    const queue = ['osaka'];
+    while (queue.length > 0) {
+      const id = queue.shift() as string;
+      for (const edge of graphs.local.get(id) ?? []) {
+        if (seen.has(edge.to)) continue;
+        seen.add(edge.to);
+        queue.push(edge.to);
+      }
+    }
+    expect(seen.has('wakayama')).toBe(true);
+    expect(seen.has('nankai-wakayamashi')).toBe(true);
+  });
+
   it('新大阪まで新幹線が通っている', () => {
     expect(availableTypes(graphs, 'shinosaka')).toContain('shinkansen');
     // 岡山から東へ 相生・姫路・西明石 と進み、4駅目が新大阪。
