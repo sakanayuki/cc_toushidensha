@@ -8,15 +8,31 @@ export type LineId = string; // 例: "yosan"
 export type IndustryId = string; // 例: "matsuyama-tourism"
 export type CategoryId = string; // 例: "mikan"
 
-/** 列車種別。実際の列車名が「区間快速」「通勤特急」等でも急行・特急に統一する。 */
-export type TrainType = 'local' | 'express' | 'ltd';
+/**
+ * 列車種別。実際の列車名が「区間快速」「通勤特急」等でも急行・特急に統一する。
+ * 新幹線だけは在来線と別の線路を走り飛距離が桁違いなので、独立した種別として扱う。
+ */
+export type TrainType = 'local' | 'express' | 'ltd' | 'shinkansen';
 
-export const TRAIN_TYPES: readonly TrainType[] = ['local', 'express', 'ltd'] as const;
+export const TRAIN_TYPES: readonly TrainType[] = [
+  'local',
+  'express',
+  'ltd',
+  'shinkansen',
+] as const;
+
+/** 在来線の種別。UI で常に並べるのはこの3つ。 */
+export const CONVENTIONAL_TRAIN_TYPES: readonly TrainType[] = [
+  'local',
+  'express',
+  'ltd',
+] as const;
 
 export const TRAIN_TYPE_LABEL: Record<TrainType, string> = {
   local: '普通',
   express: '急行',
   ltd: '特急',
+  shinkansen: '新幹線',
 };
 
 /** 交通費の種別係数（仕様書 2.2）。 */
@@ -24,6 +40,7 @@ export const FARE_COEFFICIENT: Record<TrainType, number> = {
   local: 1.0,
   express: 1.3,
   ltd: 2.2,
+  shinkansen: 3.0,
 };
 
 /** 産業の分類。1=第一次, 2=第二次, 3=第三次。 */
@@ -59,6 +76,11 @@ export interface Line {
   color: string;
   /** 起点→終点の順に並べた全収録駅。隣接関係の定義元。 */
   stations: StationId[];
+  /**
+   * 新幹線の路線か。新幹線には在来線の普通・急行・特急は走らないので、
+   * 「普通列車は全駅に停車する」といった在来線の前提から外して扱う。
+   */
+  isShinkansen?: boolean;
   /**
    * 種別ごとの停車駅。stations の部分集合であり、同じ順序を保つ。
    * 同一路線に複数の優等列車が走る場合は「どれか1本でも停まる駅」の和集合とする。

@@ -554,3 +554,20 @@ button {
   color: var(--md-sys-color-on-surface-variant);
   list-style-position: inside;
 }
+
+/* 新幹線はその駅に停まるときだけ現れる4つ目の選択肢なので、色で別格だと分かるようにする。 */
+.md-list-item--shinkansen {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.md-list-item--shinkansen .md-list-item__supporting,
+.md-list-item--shinkansen .md-list-item__trailing {
+  color: var(--md-sys-color-on-tertiary-container);
+  opacity: 0.85;
+}
+
+.map__legend-shinkansen {
+  color: var(--md-sys-color-tertiary);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
+}

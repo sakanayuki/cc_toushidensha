@@ -1,7 +1,7 @@
 /**
  * ゲームデータの組み立て。
  *
- * フェーズ1（四国＋岡山）では開始駅を松山・高松・徳島・岡山の4つとする。
+ * フェーズ1（四国＋山陽）では開始駅を松山・高松・徳島・岡山・広島の5つとする。
  * 仕様上の6つ（札幌・東京・名古屋・大阪・松山・博多）のうち、
  * 収録範囲に入るのは松山だけなので、範囲内の主要ターミナルで代替している。
  * フェーズ2の全国拡張で本来の6駅に差し替える。
@@ -13,7 +13,13 @@ import { LINES } from './lines';
 import { STATIONS, STATION_MAP } from './stations';
 import type { GameData } from './types';
 
-export const START_STATION_IDS = ['matsuyama', 'takamatsu', 'tokushima', 'okayama'];
+export const START_STATION_IDS = [
+  'matsuyama',
+  'takamatsu',
+  'tokushima',
+  'okayama',
+  'hiroshima',
+];
 
 export const GAME_DATA: GameData = {
   stations: STATION_MAP,

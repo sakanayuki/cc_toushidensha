@@ -7,6 +7,10 @@
  *
  * 距離は緯度経度からの大円距離 × 1.15 で近似する（distancesKm は未設定）。
  * 路線色は JR 四国のラインカラーに準じる。
+ *
+ * 山陽本線（岡山〜広島）には定期の在来線特急が走っていない。
+ * この区間を速く移動する手段は新幹線だけで、新幹線が停まる駅も限られる。
+ * 「乗れる駅は少ないが、乗れたら一気に飛べる」という関係がそのまま盤面に出る。
  */
 
 import type { Line } from './types';
@@ -31,6 +35,7 @@ export const LINES: Line[] = [
       express: ['okayama', 'senoo', 'hayashima', 'chayamachi', 'kojima', 'utazu'],
       // しおかぜ・南風・うずしお（岡山編成）
       ltd: ['okayama', 'kojima', 'utazu'],
+      shinkansen: [],
     },
   },
   {
@@ -72,6 +77,7 @@ export const LINES: Line[] = [
         'takamatsu', 'sakaide', 'utazu', 'tadotsu', 'takuma', 'kanonji', 'kawanoe',
         'iyomishima', 'niihama', 'iyosaijo', 'nyugawa', 'imabari', 'matsuyama', 'iyoshi',
       ],
+      shinkansen: [],
     },
   },
   {
@@ -92,6 +98,7 @@ export const LINES: Line[] = [
       express: ['tadotsu', 'kanzoji', 'zentsuji', 'kotohira'],
       // 南風・しまんと
       ltd: ['tadotsu', 'zentsuji', 'kotohira', 'awaikeda'],
+      shinkansen: [],
     },
   },
   {
@@ -124,6 +131,7 @@ export const LINES: Line[] = [
         'takamatsu', 'ritsurin', 'shido', 'orangetown', 'sanbonmatsu', 'sanukishiroto',
         'hiketa', 'itano', 'iketani', 'shozui', 'sako', 'tokushima',
       ],
+      shinkansen: [],
     },
   },
   {
@@ -137,6 +145,56 @@ export const LINES: Line[] = [
       // 優等列車は走っていない。普通列車でしか入れない行き止まり路線。
       express: [],
       ltd: [],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'sanyo',
+    name: '山陽本線',
+    operator: 'JR西日本',
+    color: '#0ea5e9',
+    stations: [
+      'okayama', 'kitanagase', 'niwase', 'nakasho', 'kurashiki', 'nishiachi', 'shinkurashiki',
+      'konko', 'kamogata', 'satosho', 'kasaoka', 'daimon', 'higashifukuyama', 'fukuyama',
+      'bingoakasaka', 'matsunaga', 'higashionomichi', 'onomichi', 'itozaki', 'mihara', 'hongo',
+      'kochi', 'nyuno', 'shiraichi', 'nishitakaya', 'saijo', 'jike', 'hachihonmatsu', 'seno',
+      'nakanohigashi', 'akinakano', 'kaitaichi', 'mukainada', 'tenjingawa', 'hiroshima',
+    ],
+    stops: {
+      local: [
+        'okayama', 'kitanagase', 'niwase', 'nakasho', 'kurashiki', 'nishiachi', 'shinkurashiki',
+        'konko', 'kamogata', 'satosho', 'kasaoka', 'daimon', 'higashifukuyama', 'fukuyama',
+        'bingoakasaka', 'matsunaga', 'higashionomichi', 'onomichi', 'itozaki', 'mihara', 'hongo',
+        'kochi', 'nyuno', 'shiraichi', 'nishitakaya', 'saijo', 'jike', 'hachihonmatsu', 'seno',
+        'nakanohigashi', 'akinakano', 'kaitaichi', 'mukainada', 'tenjingawa', 'hiroshima',
+      ],
+      // 快速サンライナー（岡山〜福山）と、広島地区の快速シティライナー（白市〜広島）。
+      // 福山〜白市には定期の快速が走らないため、急行のグラフはそこで途切れる。
+      // その区間を速く移動したければ新幹線に乗るしかない。
+      express: [
+        'okayama', 'niwase', 'kurashiki', 'shinkurashiki', 'konko', 'kamogata', 'kasaoka',
+        'daimon', 'higashifukuyama', 'fukuyama',
+        'shiraichi', 'nishitakaya', 'saijo', 'hachihonmatsu', 'seno', 'kaitaichi', 'hiroshima',
+      ],
+      // 岡山〜広島に定期の在来線特急は走っていない。
+      ltd: [],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'sanyo-shinkansen',
+    name: '山陽新幹線',
+    operator: 'JR西日本',
+    color: '#1d4ed8',
+    isShinkansen: true,
+    // 新尾道・東広島は在来線と接続しない新幹線単独駅なので、今回は収録していない。
+    stations: ['okayama', 'shinkurashiki', 'fukuyama', 'mihara', 'hiroshima'],
+    stops: {
+      local: [],
+      express: [],
+      ltd: [],
+      // のぞみ・ひかり・こだまの停車駅の和集合。
+      shinkansen: ['okayama', 'shinkurashiki', 'fukuyama', 'mihara', 'hiroshima'],
     },
   },
 ];

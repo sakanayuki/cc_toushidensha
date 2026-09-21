@@ -1,8 +1,9 @@
 /**
  * 駅マスタ（フェーズ1: 四国＋岡山）。
  *
- * 収録範囲は予讃線（高松〜伊予市）・土讃線（多度津〜阿波池田）・
- * 高徳線（高松〜徳島）・鳴門線（池谷〜鳴門）・瀬戸大橋線（岡山〜宇多津）。
+  * 収録範囲は予讃線（高松〜伊予市）・土讃線（多度津〜阿波池田）・
+ * 高徳線（高松〜徳島）・鳴門線（池谷〜鳴門）・瀬戸大橋線（岡山〜宇多津）・
+ * 山陽本線（岡山〜広島）・山陽新幹線（岡山〜広島）。
  * 収録した路線については駅を間引かず全駅を収録する。
  * 駅を間引くと「普通で4駅／急行で1駅」という本作のコアな対比が歪むため。
  *
@@ -149,6 +150,43 @@ export const STATIONS: Station[] = [
   st('konpiramae', '金比羅前', 'こんぴらまえ', '徳島県', 34.1786, 134.6053, 'konpiramae-rice'),
   st('muya', '撫養', 'むや', '徳島県', 34.1725, 134.6086, 'muya-salt'),
   st('naruto', '鳴門', 'なると', '徳島県', 34.1764, 134.6106, 'naruto-wakame', 'naruto-whirlpool'),
+
+  // ── 山陽本線 岡山 → 広島 ──
+  // この区間には定期の在来線特急が走っていない。速く移動したければ新幹線に乗るしかない。
+  st('kitanagase', '北長瀬', 'きたながせ', '岡山県', 34.6608, 133.8917, 'kitanagase-logistics'),
+  st('niwase', '庭瀬', 'にわせ', '岡山県', 34.6519, 133.8622, 'niwase-vegetables'),
+  st('nakasho', '中庄', 'なかしょう', '岡山県', 34.6136, 133.8, 'nakasho-campus'),
+  st('kurashiki', '倉敷', 'くらしき', '岡山県', 34.5983, 133.7753, 'kurashiki-petrochem', 'kurashiki-bikan', 'kurashiki-textile'),
+  st('nishiachi', '西阿知', 'にしあち', '岡山県', 34.5944, 133.7414, 'nishiachi-vegetables'),
+  st('shinkurashiki', '新倉敷', 'しんくらしき', '岡山県', 34.5619, 133.6931, 'shinkurashiki-port'),
+  st('konko', '金光', 'こんこう', '岡山県', 34.5453, 133.6414, 'konko-shrine'),
+  st('kamogata', '鴨方', 'かもがた', '岡山県', 34.5292, 133.6028, 'kamogata-somen'),
+  st('satosho', '里庄', 'さとしょう', '岡山県', 34.5219, 133.5697, 'satosho-vegetables'),
+  st('kasaoka', '笠岡', 'かさおか', '岡山県', 34.5058, 133.5069, 'kasaoka-horseshoecrab', 'kasaoka-farm'),
+  st('daimon', '大門', 'だいもん', '広島県', 34.4869, 133.4292, 'daimon-vegetables'),
+  st('higashifukuyama', '東福山', 'ひがしふくやま', '広島県', 34.4867, 133.3972, 'higashifukuyama-steel'),
+  st('fukuyama', '福山', 'ふくやま', '広島県', 34.4886, 133.3625, 'fukuyama-koto', 'fukuyama-denim', 'fukuyama-rose'),
+  st('bingoakasaka', '備後赤坂', 'びんごあかさか', '広島県', 34.4581, 133.3181, 'akasaka-vegetables'),
+  st('matsunaga', '松永', 'まつなが', '広島県', 34.4425, 133.2542, 'matsunaga-geta'),
+  st('higashionomichi', '東尾道', 'ひがしおのみち', '広島県', 34.4197, 133.2264, 'higashionomichi-logistics'),
+  st('onomichi', '尾道', 'おのみち', '広島県', 34.4053, 133.1956, 'onomichi-shipbuilding', 'onomichi-tourism', 'onomichi-ramen'),
+  st('itozaki', '糸崎', 'いとざき', '広島県', 34.3986, 133.1042, 'itozaki-port'),
+  st('mihara', '三原', 'みはら', '広島県', 34.3983, 133.0794, 'mihara-machinery', 'mihara-yassa'),
+  st('hongo', '本郷', 'ほんごう', '広島県', 34.4142, 132.9825, 'hongo-airport'),
+  st('kochi', '河内', 'こうち', '広島県', 34.4453, 132.8931, 'kochi-fruit'),
+  st('nyuno', '入野', 'にゅうの', '広島県', 34.4497, 132.8319, 'nyuno-forestry'),
+  st('shiraichi', '白市', 'しらいち', '広島県', 34.4347, 132.7908, 'shiraichi-farm'),
+  st('nishitakaya', '西高屋', 'にしたかや', '広島県', 34.4211, 132.7514, 'takaya-vegetables'),
+  st('saijo', '西条', 'さいじょう', '広島県', 34.4264, 132.7392, 'saijo-sake'),
+  st('jike', '寺家', 'じけ', '広島県', 34.4297, 132.7117, 'jike-vegetables'),
+  st('hachihonmatsu', '八本松', 'はちほんまつ', '広島県', 34.4258, 132.6803, 'hachihonmatsu-farm'),
+  st('seno', '瀬野', 'せの', '広島県', 34.4142, 132.6, 'seno-fruit'),
+  st('nakanohigashi', '中野東', 'なかのひがし', '広島県', 34.4056, 132.575, 'nakanohigashi-housing'),
+  st('akinakano', '安芸中野', 'あきなかの', '広島県', 34.3958, 132.5606, 'akinakano-vegetables'),
+  st('kaitaichi', '海田市', 'かいたいち', '広島県', 34.3722, 132.5308, 'kaitaichi-autoparts'),
+  st('mukainada', '向洋', 'むかいなだ', '広島県', 34.3728, 132.5017, 'mukainada-automobile'),
+  st('tenjingawa', '天神川', 'てんじんがわ', '広島県', 34.3844, 132.4939, 'tenjingawa-logistics'),
+  st('hiroshima', '広島', 'ひろしま', '広島県', 34.3978, 132.4753, 'hiroshima-oyster', 'hiroshima-okonomiyaki', 'hiroshima-retail'),
 ];
 
 export const STATION_MAP: Record<string, Station> = Object.fromEntries(

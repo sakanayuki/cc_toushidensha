@@ -55,16 +55,21 @@ function boxOf(points: { x: number; y: number }[], pad: number): Box {
 }
 
 /** 駅に停車する最上位の種別。表示の大きさを決める。 */
-type Tier = 'local' | 'express' | 'ltd';
+type Tier = 'local' | 'express' | 'ltd' | 'shinkansen';
+
+const TIER_RANK: Record<Tier, number> = { local: 0, express: 1, ltd: 2, shinkansen: 3 };
 
 function buildTiers(data: GameData): Map<StationId, Tier> {
   const tiers = new Map<StationId, Tier>();
+  const raise = (id: StationId, tier: Tier) => {
+    const current = tiers.get(id);
+    if (!current || TIER_RANK[tier] > TIER_RANK[current]) tiers.set(id, tier);
+  };
   for (const line of data.lines) {
-    for (const id of line.stops.local) if (!tiers.has(id)) tiers.set(id, 'local');
-    for (const id of line.stops.express) {
-      if (tiers.get(id) !== 'ltd') tiers.set(id, 'express');
-    }
-    for (const id of line.stops.ltd) tiers.set(id, 'ltd');
+    for (const id of line.stops.local) raise(id, 'local');
+    for (const id of line.stops.express) raise(id, 'express');
+    for (const id of line.stops.ltd) raise(id, 'ltd');
+    for (const id of line.stops.shinkansen) raise(id, 'shinkansen');
   }
   return tiers;
 }
@@ -189,6 +194,16 @@ export function MapView({
     if (followFocus) focusView();
   }, [followFocus, focusView]);
 
+  /**
+   * 出目が確定して行き先の候補が出たら、手動でパン・ズームした後でも追従を再開する。
+   * 候補がすべて画面に入っていないと、どこへ行けるのかを見て選べないため。
+   * 配列は毎レンダー作り直されるので、中身を繋いだ文字列で変化を見る。
+   */
+  const targetsKey = targets.join(',');
+  useEffect(() => {
+    if (targetsKey.length > 0) setFollowFocus(true);
+  }, [targetsKey]);
+
   // ── パンとピンチズーム ──
   const pointers = useRef(new Map<number, { x: number; y: number }>());
   const gesture = useRef<{ view: Box; dist: number } | null>(null);
@@ -268,12 +283,14 @@ export function MapView({
     const priority = (id: StationId, tier: Tier): number => {
       if (targetSet.has(id)) return 0;
       if (id === focusStationId) return 1;
-      if (tier === 'ltd') return 2;
-      if (tier === 'express') return 3;
-      return 4;
+      if (tier === 'shinkansen') return 2;
+      if (tier === 'ltd') return 3;
+      if (tier === 'express') return 4;
+      return 5;
     };
     // ズームアウト時は下位の種別を出さない。
-    const maxPriority = view.w > fullBox.w * 0.7 ? 2 : view.w > fullBox.w * 0.35 ? 3 : 4;
+    const maxPriority =
+      view.w > fullBox.w * 0.7 ? 3 : view.w > fullBox.w * 0.35 ? 4 : 5;
 
     const candidates = Object.values(data.stations)
       .map((station) => ({ station, tier: tiers.get(station.id) ?? ('local' as Tier) }))
@@ -376,13 +393,22 @@ export function MapView({
           const p = points.get(station.id);
           if (!p) return null;
           const tier = tiers.get(station.id) ?? 'local';
-          const r = tier === 'ltd' ? unit * 0.95 : tier === 'express' ? unit * 0.7 : unit * 0.5;
+          const r =
+            tier === 'shinkansen'
+              ? unit * 1.25
+              : tier === 'ltd'
+                ? unit * 0.95
+                : tier === 'express'
+                  ? unit * 0.7
+                  : unit * 0.5;
           const fill =
-            tier === 'ltd'
-              ? 'var(--md-sys-color-on-surface)'
-              : tier === 'express'
-                ? 'var(--md-sys-color-on-surface-variant)'
-                : 'var(--md-sys-color-outline)';
+            tier === 'shinkansen'
+              ? 'var(--md-sys-color-tertiary)'
+              : tier === 'ltd'
+                ? 'var(--md-sys-color-on-surface)'
+                : tier === 'express'
+                  ? 'var(--md-sys-color-on-surface-variant)'
+                  : 'var(--md-sys-color-outline)';
           return (
             <circle
               key={station.id}
@@ -391,7 +417,7 @@ export function MapView({
               r={r}
               fill={fill}
               stroke="var(--map-land)"
-              strokeWidth={unit * 0.18}
+              strokeWidth={tier === 'shinkansen' ? unit * 0.3 : unit * 0.18}
             />
           );
         })}
@@ -480,7 +506,8 @@ export function MapView({
       </svg>
 
       <div className="map__legend">
-        <span>●&nbsp;特急停車駅</span>
+        <span className="map__legend-shinkansen">●&nbsp;新幹線</span>
+        <span>●&nbsp;特急</span>
         <span>·&nbsp;普通のみ</span>
       </div>
 
