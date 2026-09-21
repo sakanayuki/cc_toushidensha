@@ -46,7 +46,7 @@ export function SetupScreen({ onStart, onResume }: Props) {
 
   return (
     <div className="screen">
-      <h1 className="screen__title md-display-small">投資伝車</h1>
+      <h1 className="screen__title md-display-small">投資電車</h1>
       <p className="screen__lead md-body-medium">
         日本各地の鉄道を旅しながら各駅の産業に投資し、トロフィーの数を競うゲームです。
         フェーズ1として四国＋岡山の全118駅を収録しています。
