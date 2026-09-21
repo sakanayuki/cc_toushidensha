@@ -46,7 +46,7 @@ export function ControlPanel(props: Props) {
   if (busy) {
     return (
       <div className="panel">
-        <div className="waiting">移動中…</div>
+        <div className="panel__waiting">移動中…</div>
       </div>
     );
   }
@@ -54,8 +54,11 @@ export function ControlPanel(props: Props) {
   if (player.isCPU) {
     return (
       <div className="panel">
-        <div className="waiting">
-          <span className="dot" style={{ background: player.color, display: 'inline-block' }} />{' '}
+        <div className="panel__waiting">
+          <span
+            className="player-dot thinking-dot"
+            style={{ background: player.color }}
+          />
           {player.name} が考えています…
         </div>
       </div>
@@ -69,7 +72,7 @@ export function ControlPanel(props: Props) {
           <div className="panel__title">
             {player.name} の開始駅を選んでください（他の人と同じ駅でも構いません）
           </div>
-          <div className="choices">
+          <div className="panel__list">
             {data.startStationIds.map((id) => {
               const station = data.stations[id];
               if (!station) return null;
@@ -78,14 +81,16 @@ export function ControlPanel(props: Props) {
                 <button
                   type="button"
                   key={id}
-                  className="choice"
+                  className="md-list-item md-ripple"
                   onClick={() => props.onChooseStart(id)}
                 >
-                  <div className="choice__head">
-                    <span className="choice__name">{station.name}</span>
-                    <span className="choice__meta">{station.pref}</span>
+                  <div className="md-list-item__headline">
+                    <span>{station.name}</span>
+                    <span className="md-list-item__trailing">{station.pref}</span>
                   </div>
-                  <div className="choice__sub">{list.map((x) => x.name).join('・')}</div>
+                  <div className="md-list-item__supporting">
+                    {list.map((x) => x.name).join('・')}
+                  </div>
                 </button>
               );
             })}
@@ -98,7 +103,7 @@ export function ControlPanel(props: Props) {
       return (
         <div className="panel">
           <div className="panel__title">乗る列車を選んでください（サイコロはこの後）</div>
-          <div className="choices">
+          <div className="panel__list">
             {(['local', 'express', 'ltd'] as TrainType[]).map((type) => {
               const usable = selectableTypes.includes(type);
               const next = usable ? findReachable(graphs[type], from, 1, type) : [];
@@ -110,15 +115,17 @@ export function ControlPanel(props: Props) {
                 <button
                   type="button"
                   key={type}
-                  className={usable ? 'choice' : 'choice choice--disabled'}
+                  className="md-list-item md-ripple"
                   disabled={!usable}
                   onClick={() => props.onChooseType(type)}
                 >
-                  <div className="choice__head">
-                    <span className="choice__name">{TRAIN_TYPE_LABEL[type]}</span>
-                    <span className="choice__meta">運賃 ×{FARE_COEFFICIENT[type]}</span>
+                  <div className="md-list-item__headline">
+                    <span>{TRAIN_TYPE_LABEL[type]}</span>
+                    <span className="md-list-item__trailing">
+                      運賃 ×{FARE_COEFFICIENT[type]}
+                    </span>
                   </div>
-                  <div className="choice__sub">
+                  <div className="md-list-item__supporting">
                     {usable ? `次の停車駅: ${names}` : 'この駅には停車しません'}
                   </div>
                 </button>
@@ -137,7 +144,8 @@ export function ControlPanel(props: Props) {
           </div>
           <button
             type="button"
-            className="primary"
+            className="md-fab md-ripple"
+            style={{ width: '100%' }}
             onClick={() => {
               setRolling(true);
               window.setTimeout(() => {
@@ -147,7 +155,7 @@ export function ControlPanel(props: Props) {
             }}
             disabled={rolling}
           >
-            <span className={rolling ? 'dice dice--rolling' : 'dice'}>🎲</span>
+            <span className={rolling ? 'dice-face dice-face--rolling' : 'dice-face'}>🎲</span>
           </button>
         </div>
       );
@@ -163,7 +171,7 @@ export function ControlPanel(props: Props) {
               ? `この先は行き止まりのため、${options[0]?.steps}駅先までです`
               : '降りる駅を選んでください（地図の光っている駅もタップできます）'}
           </div>
-          <div className="choices">
+          <div className="panel__list">
             {options.map((option) => {
               const station = data.stations[option.stationId];
               if (!station) return null;
@@ -172,17 +180,19 @@ export function ControlPanel(props: Props) {
                 <button
                   type="button"
                   key={option.stationId}
-                  className="choice"
+                  className="md-list-item md-ripple"
                   onClick={() => props.onChooseDest(option.stationId)}
                 >
-                  <div className="choice__head">
-                    <span className="choice__name">{station.name}</span>
-                    {isLtdStop(data, option.stationId) && <span className="badge">特急停車</span>}
-                    <span className="choice__meta">
+                  <div className="md-list-item__headline">
+                    <span>{station.name}</span>
+                    {isLtdStop(data, option.stationId) && (
+                      <span className="md-chip md-chip--small md-chip--secondary">特急停車</span>
+                    )}
+                    <span className="md-list-item__trailing">
                       {Math.round(option.distanceKm)}km / 運賃 {Math.round(option.fare)}
                     </span>
                   </div>
-                  <div className="choice__sub">
+                  <div className="md-list-item__supporting">
                     {list
                       .map((x) => `${x.name}${isBest3(x) ? '★' : ''}（規模${x.scale}）`)
                       .join('・')}
@@ -205,7 +215,7 @@ export function ControlPanel(props: Props) {
           <div className="panel__title">
             {station?.name} に到着。投資する産業を1つ選んでください
           </div>
-          <div className="choices">
+          <div className="panel__list">
             {candidates.map((industry) => (
               <IndustryChoice
                 key={industry.id}

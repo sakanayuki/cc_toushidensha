@@ -39,15 +39,17 @@ export function TrophyBar({ standings, players }: Props) {
             <button
               type="button"
               key={standing.trophyId}
-              className="trophy-cell"
+              className="trophy-cell md-ripple"
               onClick={() => setOpen((v) => !v)}
             >
               <div className="trophy-cell__name">{def.name}</div>
               <div className="trophy-cell__leader">
-                {leader && <span className="dot" style={{ background: leader.color }} />}
+                {leader && (
+                  <span className="player-dot" style={{ background: leader.color }} />
+                )}
                 <span>{leader?.name ?? '—'}</span>
                 <span className="trophy-cell__value">
-                  {isTiedAtTop(standing) && <span className="tie">同点</span>}
+                  {isTiedAtTop(standing) && <span className="md-chip md-chip--small">同点</span>}
                   {top?.display ?? '—'}
                 </span>
               </div>
@@ -56,7 +58,11 @@ export function TrophyBar({ standings, players }: Props) {
         })}
       </div>
 
-      <button type="button" className="trophies__toggle" onClick={() => setOpen((v) => !v)}>
+      <button
+        type="button"
+        className="trophies__toggle md-ripple"
+        onClick={() => setOpen((v) => !v)}
+      >
         {open ? '▲ 順位を閉じる' : '▼ 全員の順位を見る'}
       </button>
 
@@ -83,11 +89,16 @@ export function TrophyBar({ standings, players }: Props) {
                       className={i === 0 ? 'standing__row standing__row--leader' : 'standing__row'}
                     >
                       <span>{i === 0 ? '🏆' : `${i + 1}.`}</span>
-                      {player && <span className="dot" style={{ background: player.color }} />}
+                      {player && (
+                        <span
+                          className="player-dot player-dot--small"
+                          style={{ background: player.color }}
+                        />
+                      )}
                       <span>{player?.name ?? '—'}</span>
                       <span className="standing__row-value">
                         {row.display}
-                        {gap && <span style={{ opacity: 0.6 }}>（{gap}）</span>}
+                        {gap && <span className="standing__gap">（{gap}）</span>}
                       </span>
                     </div>
                   );

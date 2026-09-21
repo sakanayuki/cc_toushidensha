@@ -1,8 +1,8 @@
 /** 産業の1件表示。投資先の選択と保有一覧で共用する。 */
 
+import { FAME_CATEGORY_MAP } from '../data';
 import { SECTOR_LABEL } from '../data/types';
 import type { Industry } from '../data/types';
-import { FAME_CATEGORY_MAP } from '../data';
 
 const SECTOR_SHORT: Record<1 | 2 | 3, string> = { 1: '一次', 2: '二次', 3: '三次' };
 
@@ -19,16 +19,27 @@ export function IndustryChoice({
 }) {
   const category = industry.fame ? FAME_CATEGORY_MAP[industry.fame.categoryId] : undefined;
   return (
-    <button type="button" className="choice" onClick={onClick} disabled={!onClick}>
-      <div className="choice__head">
-        <span className="choice__name">{industry.name}</span>
-        <span className="badge badge--sector">{SECTOR_SHORT[industry.sector]}</span>
-        {isBest3(industry) && <span className="badge">全国{industry.fame?.rank}位</span>}
-        <span className="choice__meta">
+    <button
+      type="button"
+      className="md-list-item md-ripple"
+      onClick={onClick}
+      disabled={!onClick}
+    >
+      <div className="md-list-item__headline">
+        <span>{industry.name}</span>
+        <span className="md-chip md-chip--small md-chip--tertiary">
+          {SECTOR_SHORT[industry.sector]}
+        </span>
+        {isBest3(industry) && (
+          <span className="md-chip md-chip--small md-chip--primary">
+            全国{industry.fame?.rank}位
+          </span>
+        )}
+        <span className="md-list-item__trailing">
           規模 {industry.scale} / 利益率 {industry.profitRate}%
         </span>
       </div>
-      <div className="choice__sub">
+      <div className="md-list-item__supporting">
         {SECTOR_LABEL[industry.sector]}
         {category && industry.fame && (
           <>

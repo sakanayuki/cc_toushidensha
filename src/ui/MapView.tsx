@@ -1,23 +1,34 @@
 /**
- * 実座標投影による路線図（仕様書 6.1 / 決定13）。
+ * 日本地図の上に路線図を重ねた盤面（仕様書 6.1 / 決定13）。
  *
- * 緯度経度をそのまま平面に投影するので、日本列島の形が出る。
+ * 投影は Web メルカトル。駅も海岸線も同じ関数で変換するので、
+ * 路線と陸地が実際の位置関係どおりに重なる。
  * 駅の大きさは停車する最上位の種別を表し、「この駅は特急が停まるか」が
  * 到達駅を選ぶときの判断材料として一目で分かるようにしてある。
  */
 
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  JAPAN_GEO_ATTRIBUTION,
+  loadJapanGeo,
+  ringsOf,
+  type JapanGeo,
+} from '../data/geo';
 import type { GameData, StationId } from '../data/types';
 import type { Player } from '../engine/types';
 
-/** 四国付近の緯度。経度方向の圧縮に使う。 */
-const REF_LAT = 34;
-const SCALE = 1000;
+/**
+ * Web メルカトル。経度1度がちょうど 1000 単位になるようスケールを取る。
+ * 緯度が上がるほど縦に伸びるのが正しい姿で、これにより
+ * 海岸線 GeoJSON と駅の座標がそのまま重なる。
+ */
+const DEGREE = 1000;
+const R = DEGREE / (Math.PI / 180);
 
 export function project(lat: number, lon: number): { x: number; y: number } {
   return {
-    x: lon * Math.cos((REF_LAT * Math.PI) / 180) * SCALE,
-    y: -lat * SCALE,
+    x: lon * DEGREE,
+    y: -R * Math.log(Math.tan(Math.PI / 4 + (lat * Math.PI) / 360)),
   };
 }
 
@@ -58,6 +69,43 @@ function buildTiers(data: GameData): Map<StationId, Tier> {
   return tiers;
 }
 
+/** 都道府県ポリゴンを SVG の path に変換する。ビューが変わっても作り直さない。 */
+interface PrefShape {
+  name: string;
+  d: string;
+  cx: number;
+  cy: number;
+}
+
+function buildPrefShapes(geo: JapanGeo): PrefShape[] {
+  return geo.features.map((feature) => {
+    let d = '';
+    let minX = Infinity;
+    let maxX = -Infinity;
+    let minY = Infinity;
+    let maxY = -Infinity;
+
+    for (const ring of ringsOf(feature)) {
+      ring.forEach(([lon, lat], i) => {
+        const p = project(lat, lon);
+        d += `${i === 0 ? 'M' : 'L'}${p.x.toFixed(1)} ${p.y.toFixed(1)}`;
+        if (p.x < minX) minX = p.x;
+        if (p.x > maxX) maxX = p.x;
+        if (p.y < minY) minY = p.y;
+        if (p.y > maxY) maxY = p.y;
+      });
+      d += 'Z';
+    }
+
+    return {
+      name: feature.properties.name,
+      d,
+      cx: (minX + maxX) / 2,
+      cy: (minY + maxY) / 2,
+    };
+  });
+}
+
 interface Props {
   data: GameData;
   players: Player[];
@@ -89,35 +137,61 @@ export function MapView({
   const tiers = useMemo(() => buildTiers(data), [data]);
   const fullBox = useMemo(() => boxOf([...points.values()], 12), [points]);
 
+  // 地図は無くてもゲームは成立するので、非同期に読み込んで届いたら描く。
+  const [prefectures, setPrefectures] = useState<PrefShape[] | null>(null);
+  useEffect(() => {
+    let alive = true;
+    loadJapanGeo()
+      .then((geo) => {
+        if (alive) setPrefectures(buildPrefShapes(geo));
+      })
+      .catch(() => {
+        // 読み込めなくても路線図だけで遊べる。
+      });
+    return () => {
+      alive = false;
+    };
+  }, []);
+
   const [view, setView] = useState<Box>(fullBox);
   const [followFocus, setFollowFocus] = useState(true);
+  const svgRef = useRef<SVGSVGElement>(null);
+
+  /**
+   * 収めたい範囲を、画面と同じ縦横比の viewBox に広げる。
+   * SVG は viewBox 全体が収まるように縮小するので、比率を合わせておかないと
+   * 短い辺に合わせて縮み、長い辺の端が画面の外に出てしまう。
+   */
+  const fitToScreen = useCallback((box: Box, minSize: number): Box => {
+    const rect = svgRef.current?.getBoundingClientRect();
+    const aspect = rect && rect.height > 0 ? rect.width / rect.height : 1;
+    let w = Math.max(box.w, minSize);
+    let h = Math.max(box.h, minSize);
+    if (w / h < aspect) w = h * aspect;
+    else h = w / aspect;
+    return { x: box.x + box.w / 2 - w / 2, y: box.y + box.h / 2 - h / 2, w, h };
+  }, []);
 
   /** 現在地と到達可能駅がすべて収まるように寄せる。 */
   const focusView = useCallback(() => {
     const ids = [focusStationId, ...targets].filter((x): x is StationId => x !== null);
     const pts = ids.map((id) => points.get(id)).filter((p): p is { x: number; y: number } => !!p);
     if (pts.length === 0) return;
-    const box = boxOf(pts, 25);
+    const bare = boxOf(pts, 0);
+    // 余白は対象範囲に比例させる。端の駅がラベルごと画面に入るだけの幅を取る。
+    const pad = Math.max(60, Math.max(bare.w, bare.h) * 0.18);
     // 狭すぎると拡大しすぎて周辺の路線が見えなくなるので下限を設ける。
-    // 1 単位がおよそ 0.001 度なので、300 単位で 30km 四方ほどの視野になる。
-    const w = Math.max(box.w, 300);
-    const h = Math.max(box.h, 300);
-    setView({
-      x: box.x + box.w / 2 - w / 2,
-      y: box.y + box.h / 2 - h / 2,
-      w,
-      h,
-    });
-  }, [focusStationId, targets, points]);
+    // 経度1度が 1000 単位なので、300 単位で 30km 弱の視野になる。
+    setView(fitToScreen(boxOf(pts, pad), 300));
+  }, [focusStationId, targets, points, fitToScreen]);
 
   useEffect(() => {
     if (followFocus) focusView();
   }, [followFocus, focusView]);
 
   // ── パンとピンチズーム ──
-  const svgRef = useRef<SVGSVGElement>(null);
   const pointers = useRef(new Map<number, { x: number; y: number }>());
-  const gesture = useRef<{ view: Box; dist: number; cx: number; cy: number } | null>(null);
+  const gesture = useRef<{ view: Box; dist: number } | null>(null);
 
   const toViewScale = () => {
     const rect = svgRef.current?.getBoundingClientRect();
@@ -130,12 +204,7 @@ export function MapView({
     if (pointers.current.size === 2) {
       const [a, b] = [...pointers.current.values()];
       if (a && b) {
-        gesture.current = {
-          view,
-          dist: Math.hypot(a.x - b.x, a.y - b.y),
-          cx: (a.x + b.x) / 2,
-          cy: (a.y + b.y) / 2,
-        };
+        gesture.current = { view, dist: Math.hypot(a.x - b.x, a.y - b.y) };
       }
     }
   };
@@ -159,7 +228,7 @@ export function MapView({
       const dist = Math.hypot(a.x - b.x, a.y - b.y);
       const ratio = gesture.current.dist / Math.max(dist, 1);
       const base = gesture.current.view;
-      const w = Math.min(Math.max(base.w * ratio, 25), fullBox.w * 1.5);
+      const w = Math.min(Math.max(base.w * ratio, 25), fullBox.w * 6);
       const h = (w / base.w) * base.h;
       setFollowFocus(false);
       setView({
@@ -180,7 +249,7 @@ export function MapView({
     const ratio = e.deltaY > 0 ? 1.15 : 1 / 1.15;
     setFollowFocus(false);
     setView((v) => {
-      const w = Math.min(Math.max(v.w * ratio, 25), fullBox.w * 1.5);
+      const w = Math.min(Math.max(v.w * ratio, 25), fullBox.w * 6);
       const h = (w / v.w) * v.h;
       return { x: v.x + (v.w - w) / 2, y: v.y + (v.h - h) / 2, w, h };
     });
@@ -189,7 +258,7 @@ export function MapView({
   // 表示スケールに応じた大きさ。ズームしても見た目が一定になる。
   const unit = view.w / 100;
   const fontSize = unit * 2.6;
-  const targetSet = new Set(targets);
+  const targetSet = useMemo(() => new Set(targets), [targets]);
 
   /**
    * 表示する駅名を選ぶ。密集地帯でラベルが重なって読めなくなるので、
@@ -204,8 +273,7 @@ export function MapView({
       return 4;
     };
     // ズームアウト時は下位の種別を出さない。
-    const maxPriority =
-      view.w > fullBox.w * 0.7 ? 2 : view.w > fullBox.w * 0.35 ? 3 : 4;
+    const maxPriority = view.w > fullBox.w * 0.7 ? 2 : view.w > fullBox.w * 0.35 ? 3 : 4;
 
     const candidates = Object.values(data.stations)
       .map((station) => ({ station, tier: tiers.get(station.id) ?? ('local' as Tier) }))
@@ -243,7 +311,10 @@ export function MapView({
       shown.add(station.id);
     }
     return shown;
-  }, [data, points, tiers, view, fullBox.w, fontSize, unit, focusStationId, targets]);
+  }, [data, points, tiers, view, fullBox.w, fontSize, unit, focusStationId, targetSet]);
+
+  // 県名は広域表示のときだけ。駅名と競合させない。
+  const showPrefNames = view.w > fullBox.w * 0.8;
 
   return (
     <div className="map">
@@ -256,6 +327,33 @@ export function MapView({
         onPointerCancel={onPointerUp}
         onWheel={onWheel}
       >
+        {/* 陸地。路線より下に敷く。 */}
+        {prefectures?.map((pref) => (
+          <path
+            key={pref.name}
+            d={pref.d}
+            fill="var(--map-land)"
+            stroke="var(--map-border)"
+            strokeWidth={unit * 0.12}
+            strokeLinejoin="round"
+          />
+        ))}
+
+        {/* 県名 */}
+        {showPrefNames &&
+          prefectures?.map((pref) => (
+            <text
+              key={`pn-${pref.name}`}
+              className="pref-label"
+              x={pref.cx}
+              y={pref.cy}
+              fontSize={fontSize * 1.4}
+              textAnchor="middle"
+            >
+              {pref.name}
+            </text>
+          ))}
+
         {/* 路線 */}
         {data.lines.map((line) => (
           <polyline
@@ -267,10 +365,9 @@ export function MapView({
               .join(' ')}
             fill="none"
             stroke={line.color}
-            strokeWidth={unit * 0.75}
+            strokeWidth={unit * 0.8}
             strokeLinejoin="round"
             strokeLinecap="round"
-            opacity={0.85}
           />
         ))}
 
@@ -280,7 +377,12 @@ export function MapView({
           if (!p) return null;
           const tier = tiers.get(station.id) ?? 'local';
           const r = tier === 'ltd' ? unit * 0.95 : tier === 'express' ? unit * 0.7 : unit * 0.5;
-          const fill = tier === 'ltd' ? '#e2e8f0' : tier === 'express' ? '#94a3b8' : '#64748b';
+          const fill =
+            tier === 'ltd'
+              ? 'var(--md-sys-color-on-surface)'
+              : tier === 'express'
+                ? 'var(--md-sys-color-on-surface-variant)'
+                : 'var(--md-sys-color-outline)';
           return (
             <circle
               key={station.id}
@@ -288,7 +390,7 @@ export function MapView({
               cy={p.y}
               r={r}
               fill={fill}
-              stroke="#0b1220"
+              stroke="var(--map-land)"
               strokeWidth={unit * 0.18}
             />
           );
@@ -300,14 +402,32 @@ export function MapView({
           if (!p) return null;
           return (
             <g key={`t-${id}`} onClick={() => onSelect?.(id)} style={{ cursor: 'pointer' }}>
+              {/* 外側は脈動させて目を引く。 */}
               <circle
                 className="target-ring"
                 cx={p.x}
                 cy={p.y}
-                r={unit * 2}
+                r={unit * 2.4}
                 fill="none"
-                stroke="#38bdf8"
-                strokeWidth={unit * 0.4}
+                stroke="var(--md-sys-color-primary)"
+                strokeWidth={unit * 0.5}
+              />
+              {/* 内側は常に不透明。脈動が薄くなる瞬間も位置を見失わせない。 */}
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={unit * 1.6}
+                fill="none"
+                stroke="var(--md-sys-color-primary)"
+                strokeWidth={unit * 0.55}
+              />
+              <circle
+                cx={p.x}
+                cy={p.y}
+                r={unit * 0.85}
+                fill="var(--md-sys-color-primary)"
+                stroke="var(--md-sys-color-on-primary)"
+                strokeWidth={unit * 0.2}
               />
               <circle cx={p.x} cy={p.y} r={unit * 4} fill="transparent" />
             </g>
@@ -351,23 +471,28 @@ export function MapView({
               cy={p.y + Math.sin(angle) * offset}
               r={unit * 1.5}
               fill={player.color}
-              stroke="#fff"
-              strokeWidth={unit * 0.35}
+              stroke="var(--md-sys-color-surface)"
+              strokeWidth={unit * 0.4}
               style={{ transition: 'cx 0.14s linear, cy 0.14s linear' }}
             />
           );
         })}
       </svg>
 
-      <div className="map__legend">● 特急停車駅　· 普通のみ</div>
+      <div className="map__legend">
+        <span>●&nbsp;特急停車駅</span>
+        <span>·&nbsp;普通のみ</span>
+      </div>
+
+      <div className="map__attribution">{JAPAN_GEO_ATTRIBUTION}</div>
 
       <div className="map__controls">
         <button
           type="button"
-          className="map__btn"
+          className="md-icon-button md-ripple"
           onClick={() => {
             setFollowFocus(false);
-            setView(fullBox);
+            setView(fitToScreen(fullBox, 300));
           }}
           aria-label="全体を表示"
         >
@@ -375,7 +500,7 @@ export function MapView({
         </button>
         <button
           type="button"
-          className="map__btn"
+          className="md-icon-button md-ripple"
           onClick={() => {
             setFollowFocus(true);
             focusView();
