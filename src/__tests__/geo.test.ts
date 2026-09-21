@@ -31,6 +31,35 @@ function bboxOf(feature: PrefectureFeature) {
   return { minLon, maxLon, minLat, maxLat };
 }
 
+type Position = [number, number];
+
+/** 点が多角形の内側にあるか（レイキャスティング）。 */
+function contains(ring: Position[], lon: number, lat: number): boolean {
+  let inside = false;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [xi, yi] = ring[i] as Position;
+    const [xj, yj] = ring[j] as Position;
+    if ((yi > lat) !== (yj > lat) && lon < ((xj - xi) * (lat - yi)) / (yj - yi) + xi) inside = !inside;
+  }
+  return inside;
+}
+
+/** 点から多角形の辺までの最短距離（度）。 */
+function distanceToRing(ring: Position[], lon: number, lat: number): number {
+  let best = Infinity;
+  for (let i = 0, j = ring.length - 1; i < ring.length; j = i++) {
+    const [x1, y1] = ring[i] as Position;
+    const [x2, y2] = ring[j] as Position;
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    const len = dx * dx + dy * dy;
+    const t = len === 0 ? 0 : Math.max(0, Math.min(1, ((lon - x1) * dx + (lat - y1) * dy) / len));
+    const d = Math.hypot(lon - (x1 + t * dx), lat - (y1 + t * dy));
+    if (d < best) best = d;
+  }
+  return best;
+}
+
 describe('日本地図データ', () => {
   it('47都道府県ぶんある', () => {
     expect(geo.features).toHaveLength(47);
@@ -79,6 +108,24 @@ describe('駅と地図の整合', () => {
     });
 
     expect(outside.map((s) => `${s.name}(${s.pref})`)).toEqual([]);
+  });
+
+  it('すべての駅が陸の上にある（海上に置かれていない）', () => {
+    // bbox だと「県の矩形には入るが海の上」という誤りを見逃す。
+    // 駅が県のポリゴンの内側にあるか、外でも海岸線から十分近いかを見る。
+    const byName = new Map(geo.features.map((f) => [f.properties.name, ringsOf(f)]));
+    // 海岸線を簡略化したぶん、実際には陸でも外に出る駅がある。その許容幅。
+    const marginKm = 0.5;
+
+    const offshore = STATIONS.flatMap((station) => {
+      const rings = byName.get(station.pref);
+      if (!rings) return [`${station.name}(${station.pref}: 地図に無い県)`];
+      if (rings.some((ring) => contains(ring, station.lon, station.lat))) return [];
+      const km = Math.min(...rings.map((ring) => distanceToRing(ring, station.lon, station.lat))) * 111;
+      return km <= marginKm ? [] : [`${station.name}(${station.pref}) 陸まで${km.toFixed(2)}km`];
+    });
+
+    expect(offshore).toEqual([]);
   });
 
   it('収録した県がすべて地図に存在する', () => {
