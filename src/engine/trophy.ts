@@ -67,8 +67,8 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   },
   fare_min: {
     id: 'fare_min',
-    name: '節約王',
-    shortName: '節約',
+    name: '交通費節約王',
+    shortName: '交通費節約',
     description: '交通費の合計が最少',
     direction: 'min',
     format: round,

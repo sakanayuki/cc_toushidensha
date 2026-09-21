@@ -7,7 +7,7 @@
  */
 
 import { describe, expect, it } from 'vitest';
-import { STATIONS } from '../data';
+import { LINES, STATIONS, STATION_MAP } from '../data';
 import japan from '../data/geo/japan.json';
 import type { JapanGeo, PrefectureFeature } from '../data/geo';
 import { ringsOf } from '../data/geo';
@@ -104,5 +104,35 @@ describe('投影', () => {
     const low = project(33, 133).y - project(34, 133).y;
     const high = project(43, 133).y - project(44, 133).y;
     expect(Math.abs(high)).toBeGreaterThan(Math.abs(low));
+  });
+});
+
+describe('南海本線と阪和線の位置関係', () => {
+  // 南海本線は海沿い、阪和線は内陸を走る。
+  // 同じくらいの緯度で比べたとき、南海のほうが必ず西（経度が小さい）になる。
+  const line = (id: string) => {
+    const l = LINES.find((x) => x.id === id);
+    if (!l) throw new Error(`line not found: ${id}`);
+    return l.stations.map((sid) => STATION_MAP[sid]!).filter((s) => s.pref === '大阪府');
+  };
+
+  it('同緯度帯では南海本線がつねに阪和線より西にある', () => {
+    const nankai = line('nankai');
+    const hanwa = line('hanwa');
+    // 両線が並走する区間（堺〜泉佐野あたり）だけを見る。
+    const band = (s: { lat: number }) => s.lat >= 34.33 && s.lat <= 34.58;
+
+    const inverted: string[] = [];
+    for (const n of nankai.filter(band)) {
+      // 緯度がいちばん近い阪和線の駅と比べる。
+      const nearest = hanwa
+        .filter(band)
+        .reduce((a, b) => (Math.abs(b.lat - n.lat) < Math.abs(a.lat - n.lat) ? b : a));
+      if (n.lon >= nearest.lon) {
+        inverted.push(`${n.name}(${n.lon}) >= ${nearest.name}(${nearest.lon})`);
+      }
+    }
+
+    expect(inverted).toEqual([]);
   });
 });
