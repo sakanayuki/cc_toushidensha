@@ -353,4 +353,84 @@ export const LINES: Line[] = [
       shinkansen: [],
     },
   },
+  {
+    id: 'hanwa',
+    name: '阪和線',
+    operator: 'JR西日本',
+    color: '#ea580c',
+    stations: [
+      'tennoji', 'bishoen', 'minamitanabe', 'tsurugaoka', 'nagai', 'abikocho',
+      'sugimotocho', 'asaka', 'sakaishi', 'mikunigaoka', 'mozu', 'uenoshiba', 'tsukuno',
+      'otori', 'tonoki', 'kitashinoda', 'shinodayama', 'izumifuchu', 'kumeda', 'shimomatsu',
+      'higashikishiwada', 'higashikaizuka', 'izumihashimoto', 'higashisano', 'kumatori',
+      'hineno', 'nagataki', 'shinge', 'izumisunagawa', 'izumitottori', 'yamanakadani',
+      'kii', 'musota', 'kiinakanoshima', 'wakayama',
+    ],
+    stops: {
+      local: [
+        'tennoji', 'bishoen', 'minamitanabe', 'tsurugaoka', 'nagai', 'abikocho',
+        'sugimotocho', 'asaka', 'sakaishi', 'mikunigaoka', 'mozu', 'uenoshiba', 'tsukuno',
+        'otori', 'tonoki', 'kitashinoda', 'shinodayama', 'izumifuchu', 'kumeda', 'shimomatsu',
+        'higashikishiwada', 'higashikaizuka', 'izumihashimoto', 'higashisano', 'kumatori',
+        'hineno', 'nagataki', 'shinge', 'izumisunagawa', 'izumitottori', 'yamanakadani',
+        'kii', 'musota', 'kiinakanoshima', 'wakayama',
+      ],
+      // 紀州路快速・関空快速・区間快速の和集合。
+      express: [
+        'tennoji', 'sakaishi', 'mikunigaoka', 'otori', 'izumifuchu', 'higashikishiwada',
+        'kumatori', 'hineno', 'izumisunagawa', 'yamanakadani', 'kii', 'musota', 'wakayama',
+      ],
+      // くろしお。
+      ltd: ['tennoji', 'hineno', 'wakayama'],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'nankai',
+    name: '南海本線',
+    operator: '南海電気鉄道',
+    color: '#0d9488',
+    // 新今宮で JR の環状線と同じ駅を共有する。難波は南海側の終点。
+    stations: [
+      'nankai-namba', 'nankai-imamiyaebisu', 'shinimamiya', 'nankai-haginochaya',
+      'nankai-tengachaya', 'nankai-kishinosatotamade', 'nankai-kohama',
+      'nankai-sumiyoshitaisha', 'nankai-suminoe', 'nankai-shichido', 'nankai-sakai',
+      'nankai-minato', 'nankai-ishizugawa', 'nankai-suwanomori', 'nankai-hamaderakoen',
+      'nankai-hagoromo', 'nankai-takaishi', 'nankai-kitasukematsu', 'nankai-matsunohama',
+      'nankai-izumiotsu', 'nankai-tadaoka', 'nankai-haruki', 'nankai-izumiomiya',
+      'nankai-kishiwada', 'nankai-takojizo', 'nankai-kaizuka', 'nankai-nishikinohama',
+      'nankai-tsurubara', 'nankai-ihara', 'nankai-izumisano', 'nankai-hagurazaki',
+      'nankai-yoshiminosato', 'nankai-okadaura', 'nankai-tarui', 'nankai-ozaki',
+      'nankai-tottorinosho', 'nankai-hakotsukuri', 'nankai-tannowa', 'nankai-misakikoen',
+      'nankai-kyoshi', 'nankai-wakayamashi',
+    ],
+    stops: {
+      local: [
+        'nankai-namba', 'nankai-imamiyaebisu', 'shinimamiya', 'nankai-haginochaya',
+        'nankai-tengachaya', 'nankai-kishinosatotamade', 'nankai-kohama',
+        'nankai-sumiyoshitaisha', 'nankai-suminoe', 'nankai-shichido', 'nankai-sakai',
+        'nankai-minato', 'nankai-ishizugawa', 'nankai-suwanomori', 'nankai-hamaderakoen',
+        'nankai-hagoromo', 'nankai-takaishi', 'nankai-kitasukematsu', 'nankai-matsunohama',
+        'nankai-izumiotsu', 'nankai-tadaoka', 'nankai-haruki', 'nankai-izumiomiya',
+        'nankai-kishiwada', 'nankai-takojizo', 'nankai-kaizuka', 'nankai-nishikinohama',
+        'nankai-tsurubara', 'nankai-ihara', 'nankai-izumisano', 'nankai-hagurazaki',
+        'nankai-yoshiminosato', 'nankai-okadaura', 'nankai-tarui', 'nankai-ozaki',
+        'nankai-tottorinosho', 'nankai-hakotsukuri', 'nankai-tannowa', 'nankai-misakikoen',
+        'nankai-kyoshi', 'nankai-wakayamashi',
+      ],
+      // 急行・空港急行・区間急行の和集合。
+      express: [
+        'nankai-namba', 'shinimamiya', 'nankai-tengachaya', 'nankai-sakai',
+        'nankai-hagoromo', 'nankai-takaishi', 'nankai-izumiotsu', 'nankai-haruki',
+        'nankai-kishiwada', 'nankai-kaizuka', 'nankai-izumisano', 'nankai-ozaki',
+        'nankai-misakikoen', 'nankai-wakayamashi',
+      ],
+      // 特急サザン。
+      ltd: [
+        'nankai-namba', 'shinimamiya', 'nankai-tengachaya', 'nankai-sakai',
+        'nankai-kishiwada', 'nankai-izumisano', 'nankai-wakayamashi',
+      ],
+      shinkansen: [],
+    },
+  },
 ];
