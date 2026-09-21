@@ -6,7 +6,7 @@
  * 「乗り換え」という処理は一切要らない（仕様書 2.1 / 4.2）。
  */
 
-import { FARE_COEFFICIENT } from '../data/types';
+import { FARE_COEFFICIENT, TRAIN_TYPES } from '../data/types';
 import type { GameData, LineId, StationId, TrainType } from '../data/types';
 import { approxRailDistanceKm } from './geo';
 import type { MoveOption } from './types';
@@ -93,14 +93,13 @@ export function buildGraphs(data: GameData): Graphs {
     local: buildGraph(data, 'local'),
     express: buildGraph(data, 'express'),
     ltd: buildGraph(data, 'ltd'),
+    shinkansen: buildGraph(data, 'shinkansen'),
   };
 }
 
 /** その駅から発車できる種別（＝その駅に停車する種別）。 */
 export function availableTypes(graphs: Graphs, from: StationId): TrainType[] {
-  return (['local', 'express', 'ltd'] as TrainType[]).filter(
-    (t) => (graphs[t].get(from)?.length ?? 0) > 0,
-  );
+  return TRAIN_TYPES.filter((t) => (graphs[t].get(from)?.length ?? 0) > 0);
 }
 
 interface Frontier {

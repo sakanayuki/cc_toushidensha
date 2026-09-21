@@ -51,6 +51,15 @@ export const FAME_CATEGORIES: FameCategory[] = [
   c('muscat', 'ぶどう', '長野', '山梨', '岡山'),
   c('peach', '桃', '山梨', '福島', '長野'),
   c('igusa', 'い草', '熊本', '福岡', '岡山'),
+  c('petrochem', '石油化学', '三重・四日市', '岡山・水島', '千葉・市原'),
+  c('historic-district', '重要伝統的建造物群', '岡山・倉敷美観地区', '岐阜・白川郷', '京都・産寧坂'),
+  c('somen', '手延べそうめん', '兵庫・揖保乃糸', '奈良・三輪', '岡山・鴨方'),
+  c('steel', '鉄鋼', '愛知・東海', '広島・福山', '千葉・君津'),
+  c('koto', '琴', '広島・福山', '愛知', 'その他'),
+  c('geta', '下駄', '広島・松永', '静岡', 'その他'),
+  c('sake', '日本酒', '兵庫・灘', '京都・伏見', '広島・西条'),
+  c('automobile', '自動車', '愛知・豊田', '広島・府中', '静岡・浜松'),
+  c('oyster', '牡蠣養殖', '広島', '宮城', '岡山'),
 ];
 
 export const FAME_CATEGORY_MAP: Record<string, FameCategory> = Object.fromEntries(

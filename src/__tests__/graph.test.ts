@@ -33,7 +33,7 @@ const line = (
   operator: 'test',
   color: '#000',
   stations,
-  stops: { local: stations, express, ltd },
+  stops: { local: stations, express, ltd, shinkansen: [] },
 });
 
 describe('findReachable', () => {
@@ -137,5 +137,30 @@ describe('実データでの移動', () => {
   it('特急停車駅でない駅からは特急に乗れない', () => {
     expect(availableTypes(graphs, 'kozai')).not.toContain('ltd');
     expect(findReachable(graphs.ltd, 'kozai', 1, 'ltd')).toEqual([]);
+  });
+
+  it('新幹線に乗れる駅はごく限られる', () => {
+    const all = Object.values(GAME_DATA.stations);
+    const withShinkansen = all.filter((s) => availableTypes(graphs, s.id).includes('shinkansen'));
+    // 収録した全駅のうち、新幹線が停まるのは一握りだけ。
+    expect(withShinkansen.length).toBeGreaterThan(1);
+    expect(withShinkansen.length).toBeLessThan(all.length * 0.1);
+    expect(availableTypes(graphs, 'okayama')).toContain('shinkansen');
+    expect(availableTypes(graphs, 'kurashiki')).not.toContain('shinkansen');
+  });
+
+  it('岡山から新幹線1駅は、普通列車1駅より遥かに遠い', () => {
+    const byShinkansen = findReachable(graphs.shinkansen, 'okayama', 1, 'shinkansen');
+    const byLocal = findReachable(graphs.local, 'okayama', 1, 'local');
+    const maxShinkansen = Math.max(...byShinkansen.map((o) => o.distanceKm));
+    const maxLocal = Math.max(...byLocal.map((o) => o.distanceKm));
+    expect(maxShinkansen).toBeGreaterThan(maxLocal * 5);
+  });
+
+  it('岡山〜広島は在来線特急では移動できず、新幹線なら数駅で着く', () => {
+    // 山陽本線に定期特急が走っていないことがグラフに出ている。
+    expect(availableTypes(graphs, 'hiroshima')).not.toContain('ltd');
+    const reach = findReachable(graphs.shinkansen, 'okayama', 4, 'shinkansen');
+    expect(reach.map((o) => o.stationId)).toContain('hiroshima');
   });
 });

@@ -6,7 +6,11 @@
  */
 
 import { useState } from 'react';
-import { FARE_COEFFICIENT, TRAIN_TYPE_LABEL } from '../data/types';
+import {
+  CONVENTIONAL_TRAIN_TYPES,
+  FARE_COEFFICIENT,
+  TRAIN_TYPE_LABEL,
+} from '../data/types';
 import type { GameData, Industry, StationId, TrainType } from '../data/types';
 import { findReachable } from '../engine/graph';
 import type { Graphs } from '../engine/graph';
@@ -100,37 +104,48 @@ export function ControlPanel(props: Props) {
 
     case 'chooseType': {
       const from = player.stationId as StationId;
+
+      const typeButton = (type: TrainType, usable: boolean) => {
+        const next = usable ? findReachable(graphs[type], from, 1, type) : [];
+        const names = next
+          .map((o) => data.stations[o.stationId]?.name)
+          .filter(Boolean)
+          .join('・');
+        return (
+          <button
+            type="button"
+            key={type}
+            className={
+              type === 'shinkansen'
+                ? 'md-list-item md-list-item--shinkansen md-ripple'
+                : 'md-list-item md-ripple'
+            }
+            disabled={!usable}
+            onClick={() => props.onChooseType(type)}
+          >
+            <div className="md-list-item__headline">
+              <span>{TRAIN_TYPE_LABEL[type]}</span>
+              <span className="md-list-item__trailing">運賃 ×{FARE_COEFFICIENT[type]}</span>
+            </div>
+            <div className="md-list-item__supporting">
+              {usable ? `次の停車駅: ${names}` : 'この駅には停車しません'}
+            </div>
+          </button>
+        );
+      };
+
+      // 新幹線が停まる駅はごく限られるので、乗れるときだけ4つ目として下に出す。
+      // 在来線の3種別はいつもどおり並べ、停車しないものは押せない状態で見せる。
+      const canShinkansen = selectableTypes.includes('shinkansen');
+
       return (
         <div className="panel">
           <div className="panel__title">乗る列車を選んでください（サイコロはこの後）</div>
           <div className="panel__list">
-            {(['local', 'express', 'ltd'] as TrainType[]).map((type) => {
-              const usable = selectableTypes.includes(type);
-              const next = usable ? findReachable(graphs[type], from, 1, type) : [];
-              const names = next
-                .map((o) => data.stations[o.stationId]?.name)
-                .filter(Boolean)
-                .join('・');
-              return (
-                <button
-                  type="button"
-                  key={type}
-                  className="md-list-item md-ripple"
-                  disabled={!usable}
-                  onClick={() => props.onChooseType(type)}
-                >
-                  <div className="md-list-item__headline">
-                    <span>{TRAIN_TYPE_LABEL[type]}</span>
-                    <span className="md-list-item__trailing">
-                      運賃 ×{FARE_COEFFICIENT[type]}
-                    </span>
-                  </div>
-                  <div className="md-list-item__supporting">
-                    {usable ? `次の停車駅: ${names}` : 'この駅には停車しません'}
-                  </div>
-                </button>
-              );
-            })}
+            {CONVENTIONAL_TRAIN_TYPES.map((type) =>
+              typeButton(type, selectableTypes.includes(type)),
+            )}
+            {canShinkansen && typeButton('shinkansen', true)}
           </div>
         </div>
       );

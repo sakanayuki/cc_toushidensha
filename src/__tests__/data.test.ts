@@ -116,10 +116,31 @@ describe('路線データ', () => {
     }
   });
 
-  it('普通列車は全駅に停車する', () => {
+  it('在来線の普通列車は全駅に停車する', () => {
     for (const line of LINES) {
+      if (line.isShinkansen) continue;
       expect(line.stops.local, `${line.id}`).toEqual(line.stations);
     }
+  });
+
+  it('新幹線路線には在来線の種別が走らない', () => {
+    for (const line of LINES.filter((l) => l.isShinkansen)) {
+      expect(line.stops.local, `${line.id}`).toEqual([]);
+      expect(line.stops.express, `${line.id}`).toEqual([]);
+      expect(line.stops.ltd, `${line.id}`).toEqual([]);
+      expect(line.stops.shinkansen.length, `${line.id}`).toBeGreaterThan(1);
+    }
+  });
+
+  it('新幹線の駅はすべて在来線にも接続している', () => {
+    // 在来線と繋がらない新幹線単独駅を入れると、普通列車のグラフから孤立してしまう。
+    const conventional = new Set(
+      LINES.filter((l) => !l.isShinkansen).flatMap((l) => l.stations),
+    );
+    const isolated = LINES.filter((l) => l.isShinkansen)
+      .flatMap((l) => l.stations)
+      .filter((id) => !conventional.has(id));
+    expect(isolated).toEqual([]);
   });
 
   it('distancesKm を持つ路線は長さが駅数-1', () => {
@@ -156,11 +177,19 @@ describe('移動グラフ', () => {
     }
   });
 
-  it('急行・特急グラフの駅数が普通より少ない', () => {
+  it('急行・特急・新幹線グラフの駅数が普通より少ない', () => {
     const local = buildGraph(GAME_DATA, 'local').size;
-    const express = buildGraph(GAME_DATA, 'express').size;
-    const ltd = buildGraph(GAME_DATA, 'ltd').size;
-    expect(express).toBeLessThan(local);
-    expect(ltd).toBeLessThan(local);
+    for (const type of ['express', 'ltd', 'shinkansen'] as const) {
+      expect(buildGraph(GAME_DATA, type).size, type).toBeLessThan(local);
+    }
+  });
+
+  it('新幹線が走る駅が存在し、在来線より圧倒的に足が速い', () => {
+    const shinkansen = buildGraph(GAME_DATA, 'shinkansen');
+    expect(shinkansen.size).toBeGreaterThan(1);
+    // 岡山から新幹線で1駅進む距離が、普通列車で1駅進む距離より遥かに長いこと。
+    const byShinkansen = shinkansen.get('okayama')?.[0]?.distanceKm ?? 0;
+    const byLocal = buildGraph(GAME_DATA, 'local').get('okayama')?.[0]?.distanceKm ?? 0;
+    expect(byShinkansen).toBeGreaterThan(byLocal * 5);
   });
 });
