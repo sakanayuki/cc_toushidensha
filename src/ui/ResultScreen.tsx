@@ -26,21 +26,23 @@ export function ResultScreen({ state, data, onRestart }: Props) {
 
   return (
     <div className="screen">
-      <h1>結果発表</h1>
+      <h1 className="screen__title md-display-small">結果発表</h1>
 
-      <h2>トロフィー</h2>
+      <h2 className="screen__section md-title-small">トロフィー</h2>
       {result.standings.slice(0, revealed).map((standing) => {
         const def = TROPHY_DEFS[standing.trophyId];
         const winner = standing.winnerIndex !== null ? byIndex.get(standing.winnerIndex) : null;
         const top = standing.ranking[0];
         return (
-          <div className="trophy-award" key={standing.trophyId}>
+          <div className="award" key={standing.trophyId}>
             <span>🏆</span>
-            <span style={{ fontWeight: 700 }}>{def.name}</span>
-            {winner && <span className="dot" style={{ background: winner.color }} />}
+            <span className="award__name">{def.name}</span>
+            {winner && <span className="player-dot" style={{ background: winner.color }} />}
             <span>{winner?.name}</span>
-            <span style={{ marginLeft: 'auto', color: 'var(--muted)' }}>
-              {isTiedAtTop(standing) && <span className="tie">同点勝ち</span>}
+            <span className="award__value">
+              {isTiedAtTop(standing) && (
+                <span className="md-chip md-chip--small">同点勝ち</span>
+              )}
               {top?.display}
             </span>
           </div>
@@ -49,7 +51,7 @@ export function ResultScreen({ state, data, onRestart }: Props) {
 
       {allRevealed && (
         <>
-          <h2>順位</h2>
+          <h2 className="screen__section md-title-small">順位</h2>
           {[...state.players]
             .sort(
               (a, b) => (result.trophyCounts[b.index] ?? 0) - (result.trophyCounts[a.index] ?? 0),
@@ -64,20 +66,20 @@ export function ResultScreen({ state, data, onRestart }: Props) {
                   key={player.index}
                   className={isWinner ? 'result-row result-row--winner' : 'result-row'}
                 >
-                  <span className="dot" style={{ background: player.color }} />
-                  <div style={{ minWidth: 0 }}>
-                    <div style={{ fontWeight: 700 }}>
+                  <span className="player-dot" style={{ background: player.color }} />
+                  <div className="result-row__body">
+                    <div className="result-row__name">
                       {player.name}
                       {isWinner && ' 👑'}
                     </div>
-                    <div className="holdings">
+                    <div className="chip-row">
                       {owned.map((x) => (
-                        <span className="chip" key={x.id}>
+                        <span className="md-chip md-chip--small md-chip--outlined" key={x.id}>
                           {x.name}
                         </span>
                       ))}
                     </div>
-                    <div className="note">
+                    <div className="result-row__sub">
                       交通費 {Math.round(player.fareTotal)} ／ 最終地点{' '}
                       {player.stationId ? data.stations[player.stationId]?.name : '—'}
                     </div>
@@ -87,8 +89,12 @@ export function ResultScreen({ state, data, onRestart }: Props) {
               );
             })}
 
-          <div style={{ marginTop: 18 }}>
-            <button type="button" className="primary" onClick={onRestart}>
+          <div style={{ marginTop: 24 }}>
+            <button
+              type="button"
+              className="md-button md-button--filled md-button--large md-button--full md-ripple"
+              onClick={onRestart}
+            >
               もう一度遊ぶ
             </button>
           </div>

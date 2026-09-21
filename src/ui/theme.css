@@ -1,0 +1,130 @@
+/*
+ * Material 3 Expressive のカラートークン。
+ *
+ * このファイルは scripts/build-theme.ts が生成する。直接編集しないこと。
+ * 色を変えるときはスクリプト側の SOURCE を変えて再生成する。
+ *
+ *     npx vite-node scripts/build-theme.ts
+ *
+ * ソースカラー: #0F5C6E
+ * スキーム: SchemeExpressive
+ */
+
+:root {
+  --md-sys-color-primary: #dbc764;
+  --md-sys-color-on-primary: #393000;
+  --md-sys-color-primary-container: #524700;
+  --md-sys-color-on-primary-container: #f8e37d;
+  --md-sys-color-secondary: #d4bee6;
+  --md-sys-color-on-secondary: #392a49;
+  --md-sys-color-secondary-container: #504060;
+  --md-sys-color-on-secondary-container: #f0dbff;
+  --md-sys-color-tertiary: #99cdee;
+  --md-sys-color-on-tertiary: #00344a;
+  --md-sys-color-tertiary-container: #0b4c67;
+  --md-sys-color-on-tertiary-container: #c4e7ff;
+  --md-sys-color-error: #ffb4ab;
+  --md-sys-color-on-error: #690005;
+  --md-sys-color-error-container: #93000a;
+  --md-sys-color-on-error-container: #ffdad6;
+  --md-sys-color-background: #0d1419;
+  --md-sys-color-on-background: #dde3ea;
+  --md-sys-color-surface: #0d1419;
+  --md-sys-color-on-surface: #dde3ea;
+  --md-sys-color-surface-variant: #3c4851;
+  --md-sys-color-on-surface-variant: #bbc8d2;
+  --md-sys-color-surface-dim: #0d1419;
+  --md-sys-color-surface-bright: #333a3f;
+  --md-sys-color-surface-container-lowest: #080f13;
+  --md-sys-color-surface-container-low: #161c21;
+  --md-sys-color-surface-container: #1a2025;
+  --md-sys-color-surface-container-high: #242b30;
+  --md-sys-color-surface-container-highest: #2f363b;
+  --md-sys-color-inverse-surface: #dde3ea;
+  --md-sys-color-inverse-on-surface: #2a3136;
+  --md-sys-color-inverse-primary: #6d5e00;
+  --md-sys-color-outline: #86929c;
+  --md-sys-color-outline-variant: #3c4851;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+}
+
+@media (prefers-color-scheme: light) {
+  :root:not([data-theme='dark']) {
+    --md-sys-color-primary: #6d5e00;
+    --md-sys-color-on-primary: #ffffff;
+    --md-sys-color-primary-container: #f8e37d;
+    --md-sys-color-on-primary-container: #524700;
+    --md-sys-color-secondary: #695779;
+    --md-sys-color-on-secondary: #ffffff;
+    --md-sys-color-secondary-container: #f0dbff;
+    --md-sys-color-on-secondary-container: #504060;
+    --md-sys-color-tertiary: #2d6480;
+    --md-sys-color-on-tertiary: #ffffff;
+    --md-sys-color-tertiary-container: #c4e7ff;
+    --md-sys-color-on-tertiary-container: #0b4c67;
+    --md-sys-color-error: #ba1a1a;
+    --md-sys-color-on-error: #ffffff;
+    --md-sys-color-error-container: #ffdad6;
+    --md-sys-color-on-error-container: #93000a;
+    --md-sys-color-background: #f5faff;
+    --md-sys-color-on-background: #161c21;
+    --md-sys-color-surface: #f5faff;
+    --md-sys-color-on-surface: #161c21;
+    --md-sys-color-surface-variant: #d7e4ef;
+    --md-sys-color-on-surface-variant: #3c4851;
+    --md-sys-color-surface-dim: #d4dbe1;
+    --md-sys-color-surface-bright: #f5faff;
+    --md-sys-color-surface-container-lowest: #ffffff;
+    --md-sys-color-surface-container-low: #eef4fb;
+    --md-sys-color-surface-container: #e8eff5;
+    --md-sys-color-surface-container-high: #e2e9ef;
+    --md-sys-color-surface-container-highest: #dde3ea;
+    --md-sys-color-inverse-surface: #2a3136;
+    --md-sys-color-inverse-on-surface: #ebf2f8;
+    --md-sys-color-inverse-primary: #dbc764;
+    --md-sys-color-outline: #6c7982;
+    --md-sys-color-outline-variant: #bbc8d2;
+    --md-sys-color-scrim: #000000;
+    --md-sys-color-shadow: #000000;
+  }
+}
+
+:root[data-theme='light'] {
+  --md-sys-color-primary: #6d5e00;
+  --md-sys-color-on-primary: #ffffff;
+  --md-sys-color-primary-container: #f8e37d;
+  --md-sys-color-on-primary-container: #524700;
+  --md-sys-color-secondary: #695779;
+  --md-sys-color-on-secondary: #ffffff;
+  --md-sys-color-secondary-container: #f0dbff;
+  --md-sys-color-on-secondary-container: #504060;
+  --md-sys-color-tertiary: #2d6480;
+  --md-sys-color-on-tertiary: #ffffff;
+  --md-sys-color-tertiary-container: #c4e7ff;
+  --md-sys-color-on-tertiary-container: #0b4c67;
+  --md-sys-color-error: #ba1a1a;
+  --md-sys-color-on-error: #ffffff;
+  --md-sys-color-error-container: #ffdad6;
+  --md-sys-color-on-error-container: #93000a;
+  --md-sys-color-background: #f5faff;
+  --md-sys-color-on-background: #161c21;
+  --md-sys-color-surface: #f5faff;
+  --md-sys-color-on-surface: #161c21;
+  --md-sys-color-surface-variant: #d7e4ef;
+  --md-sys-color-on-surface-variant: #3c4851;
+  --md-sys-color-surface-dim: #d4dbe1;
+  --md-sys-color-surface-bright: #f5faff;
+  --md-sys-color-surface-container-lowest: #ffffff;
+  --md-sys-color-surface-container-low: #eef4fb;
+  --md-sys-color-surface-container: #e8eff5;
+  --md-sys-color-surface-container-high: #e2e9ef;
+  --md-sys-color-surface-container-highest: #dde3ea;
+  --md-sys-color-inverse-surface: #2a3136;
+  --md-sys-color-inverse-on-surface: #ebf2f8;
+  --md-sys-color-inverse-primary: #dbc764;
+  --md-sys-color-outline: #6c7982;
+  --md-sys-color-outline-variant: #bbc8d2;
+  --md-sys-color-scrim: #000000;
+  --md-sys-color-shadow: #000000;
+}

@@ -1,0 +1,379 @@
+/*
+ * Material 3 Expressive のコンポーネント。
+ *
+ * M3 の仕様に沿った汎用部品をここに置き、ゲーム固有のレイアウトは app.css に分ける。
+ * Expressive の性格は主に次の3点で出している。
+ *   - シェイプが大きい（ボタンは full、カードは extra-large）
+ *   - 押すと角丸が縮む形の変化（shape morph）と、跳ねるスプリング
+ *   - container 系の色を面で使い、彩度の高さをそのまま見せる
+ */
+
+/* ── 共通の下地 ── */
+
+.md-ripple {
+  position: relative;
+  overflow: hidden;
+  isolation: isolate;
+}
+
+/* ステートレイヤー。M3 では前景色を規定の不透明度で重ねる。 */
+.md-ripple::after {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background: currentColor;
+  opacity: 0;
+  transition: opacity var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+  pointer-events: none;
+  z-index: -1;
+}
+
+.md-ripple:hover::after {
+  opacity: var(--md-sys-state-hover-opacity);
+}
+
+.md-ripple:active::after {
+  opacity: var(--md-sys-state-pressed-opacity);
+}
+
+.md-ripple:focus-visible {
+  outline: 3px solid var(--md-sys-color-secondary);
+  outline-offset: 2px;
+}
+
+/* ── ボタン ── */
+
+.md-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  min-height: 40px;
+  padding: 0 24px;
+  border-radius: var(--md-sys-shape-corner-full);
+  font-size: var(--md-sys-typescale-label-large-size);
+  line-height: var(--md-sys-typescale-label-large-line);
+  font-weight: var(--md-sys-typescale-weight-medium);
+  /* Expressive の shape morph: 押すと角丸が縮んで四角に寄る。 */
+  transition:
+    border-radius var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-spring),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md-button:active {
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.md-button:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.md-button--filled {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+}
+
+.md-button--tonal {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-button--outlined {
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  border: 1px solid var(--md-sys-color-outline);
+}
+
+.md-button--text {
+  background: transparent;
+  color: var(--md-sys-color-primary);
+  padding: 0 12px;
+}
+
+/* Expressive のサイズ段階。主要な操作ほど大きく取る。 */
+.md-button--large {
+  min-height: 72px;
+  padding: 0 32px;
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  font-size: var(--md-sys-typescale-title-medium-size);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
+}
+
+.md-button--large:active {
+  border-radius: var(--md-sys-shape-corner-large);
+}
+
+.md-button--full {
+  width: 100%;
+}
+
+/* ── FAB ── */
+
+.md-fab {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  min-height: 96px;
+  padding: 0 32px;
+  border-radius: var(--md-sys-shape-corner-extra-large-increased);
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  box-shadow: var(--md-sys-elevation-level3);
+  font-size: var(--md-sys-typescale-headline-small-size);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
+  transition:
+    border-radius var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-spring-bouncy),
+    transform var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-spring-bouncy),
+    box-shadow var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md-fab:active {
+  border-radius: var(--md-sys-shape-corner-large-increased);
+  transform: scale(0.97);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+.md-fab:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+/* ── カード ── */
+
+.md-card {
+  border-radius: var(--md-sys-shape-corner-extra-large);
+  background: var(--md-sys-color-surface-container-low);
+  color: var(--md-sys-color-on-surface);
+  overflow: hidden;
+}
+
+.md-card--filled {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+.md-card--outlined {
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+.md-card--elevated {
+  background: var(--md-sys-color-surface-container-low);
+  box-shadow: var(--md-sys-elevation-level1);
+}
+
+/* ── リスト項目 ──
+   選択肢として押せるので、ボタンと同じ shape morph を持たせる。 */
+
+.md-list-item {
+  display: block;
+  width: 100%;
+  text-align: left;
+  padding: 12px 16px;
+  border-radius: var(--md-sys-shape-corner-large);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface);
+  transition:
+    border-radius var(--md-sys-motion-duration-short4) var(--md-sys-motion-easing-spring),
+    background-color var(--md-sys-motion-duration-short3) var(--md-sys-motion-easing-standard);
+}
+
+.md-list-item:active {
+  border-radius: var(--md-sys-shape-corner-small);
+}
+
+.md-list-item:disabled {
+  opacity: 0.38;
+  pointer-events: none;
+}
+
+.md-list-item--selected {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-list-item__headline {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: var(--md-sys-typescale-body-large-size);
+  line-height: var(--md-sys-typescale-body-large-line);
+  font-weight: var(--md-sys-typescale-weight-medium);
+}
+
+.md-list-item__supporting {
+  font-size: var(--md-sys-typescale-body-medium-size);
+  line-height: var(--md-sys-typescale-body-medium-line);
+  color: var(--md-sys-color-on-surface-variant);
+  margin-top: 2px;
+}
+
+.md-list-item__trailing {
+  margin-left: auto;
+  font-size: var(--md-sys-typescale-label-medium-size);
+  color: var(--md-sys-color-on-surface-variant);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+}
+
+/* ── チップ ── */
+
+.md-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  height: 32px;
+  padding: 0 12px;
+  border-radius: var(--md-sys-shape-corner-small);
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-weight-medium);
+  white-space: nowrap;
+}
+
+.md-chip--small {
+  height: 24px;
+  padding: 0 8px;
+  font-size: var(--md-sys-typescale-label-small-size);
+}
+
+.md-chip--primary {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+}
+
+.md-chip--secondary {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+.md-chip--tertiary {
+  background: var(--md-sys-color-tertiary-container);
+  color: var(--md-sys-color-on-tertiary-container);
+}
+
+.md-chip--outlined {
+  background: transparent;
+  border: 1px solid var(--md-sys-color-outline-variant);
+}
+
+/* ── セグメンテッドボタン ── */
+
+.md-segmented {
+  display: inline-flex;
+  width: 100%;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-full);
+  overflow: hidden;
+}
+
+.md-segmented > button {
+  flex: 1 1 0;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0 8px;
+  color: var(--md-sys-color-on-surface);
+  font-size: var(--md-sys-typescale-label-large-size);
+  font-weight: var(--md-sys-typescale-weight-medium);
+  border-right: 1px solid var(--md-sys-color-outline);
+  transition: background-color var(--md-sys-motion-duration-short3)
+    var(--md-sys-motion-easing-standard);
+}
+
+.md-segmented > button:last-child {
+  border-right: none;
+}
+
+.md-segmented > button[aria-pressed='true'] {
+  background: var(--md-sys-color-secondary-container);
+  color: var(--md-sys-color-on-secondary-container);
+}
+
+/* ── トップアプリバー ── */
+
+.md-top-app-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-height: 56px;
+  padding: 4px 8px 4px 16px;
+  background: var(--md-sys-color-surface-container);
+  color: var(--md-sys-color-on-surface);
+}
+
+.md-top-app-bar__title {
+  font-size: var(--md-sys-typescale-title-large-size);
+  line-height: var(--md-sys-typescale-title-large-line);
+  font-weight: var(--md-sys-typescale-weight-medium);
+  min-width: 0;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+/* ── アイコンボタン ── */
+
+.md-icon-button {
+  display: inline-grid;
+  place-items: center;
+  width: 48px;
+  height: 48px;
+  border-radius: var(--md-sys-shape-corner-full);
+  color: var(--md-sys-color-on-surface-variant);
+  font-size: 20px;
+  transition: border-radius var(--md-sys-motion-duration-short4)
+    var(--md-sys-motion-easing-spring);
+}
+
+.md-icon-button:active {
+  border-radius: var(--md-sys-shape-corner-medium);
+}
+
+.md-icon-button--filled {
+  background: var(--md-sys-color-surface-container-highest);
+}
+
+/* ── テキストフィールド（outlined） ── */
+
+.md-text-field {
+  background: transparent;
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  padding: 10px 14px;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  font-size: var(--md-sys-typescale-body-large-size);
+  min-width: 0;
+}
+
+.md-text-field:focus {
+  outline: none;
+  border-color: var(--md-sys-color-primary);
+  border-width: 2px;
+  padding: 9px 13px;
+}
+
+.md-select {
+  background: var(--md-sys-color-surface-container-high);
+  border: 1px solid var(--md-sys-color-outline);
+  border-radius: var(--md-sys-shape-corner-extra-small);
+  padding: 10px 8px;
+  color: var(--md-sys-color-on-surface);
+  font: inherit;
+  font-size: var(--md-sys-typescale-body-medium-size);
+}
+
+.md-select:disabled {
+  opacity: 0.38;
+}
+
+/* ── ディバイダー ── */
+
+.md-divider {
+  height: 1px;
+  background: var(--md-sys-color-outline-variant);
+  border: none;
+}

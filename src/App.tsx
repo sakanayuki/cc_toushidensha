@@ -145,18 +145,18 @@ export function App() {
 
   return (
     <div className="app">
-      <header className="header">
-        <span className="header__turn">
+      <header className="md-top-app-bar">
+        <span className="app__bar-player">
+          <span className="player-dot" style={{ background: player.color }} />
+          <span className="md-top-app-bar__title">{player.name}</span>
+        </span>
+        <span className="app__bar-turn">
           {game.turn} / {game.turns} ターン
         </span>
-        <span className="header__player">
-          <span className="dot" style={{ background: player.color }} />
-          <span className="header__player-name">{player.name}</span>
-        </span>
-        <span className="header__spacer" />
+        <span className="app__spacer" />
         <button
           type="button"
-          className="header__menu"
+          className="md-button md-button--text md-ripple"
           onClick={() => {
             if (window.confirm('ゲームを中断して最初の画面に戻りますか？')) restart();
           }}
