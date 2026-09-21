@@ -198,6 +198,16 @@ export function computeStandings(state: GameState, data: GameData): TrophyStandi
   return state.trophies.map((id) => computeStanding(id, state.players, data));
 }
 
+/**
+ * 首位が単独ではなく、タイブレークで決着しているか。
+ * ゲーム開始直後は全員が同値になるため、UI でその旨を示すのに使う。
+ */
+export function isTiedAtTop(standing: TrophyStanding): boolean {
+  const first = standing.ranking[0];
+  const second = standing.ranking[1];
+  return first !== undefined && second !== undefined && first.value === second.value;
+}
+
 export interface FinalResult {
   standings: TrophyStanding[];
   /** プレイヤーごとの獲得トロフィー数。index は players と同じ。 */
