@@ -157,6 +157,54 @@ describe('実データでの移動', () => {
     expect(maxShinkansen).toBeGreaterThan(maxLocal * 5);
   });
 
+  it('大阪駅は JR・阪急・阪神が集まる一つの駅として繋がっている', () => {
+    // 西梅田・東梅田・阪急大阪梅田・阪神大阪梅田・北新地をまとめて「大阪」1駅として扱う。
+    const lines = GAME_DATA.lines.filter((l) => l.stations.includes('osaka'));
+    expect(lines.map((l) => l.id).sort()).toEqual([
+      'hankyu-kobe',
+      'hanshin',
+      'osaka-loop',
+      'tokaido',
+    ]);
+    // 普通列車のグラフでも、その4方向すべてに出られる。
+    const edges = graphs.local.get('osaka') ?? [];
+    expect(new Set(edges.map((e) => e.lineId)).size).toBe(4);
+  });
+
+  it('大阪から三宮へ JR・阪急・阪神の3経路で行ける', () => {
+    const viaLines = new Set<string>();
+    // 各社の普通列車で、大阪から三宮方向に出る最初の一歩を見る。
+    for (const edge of graphs.local.get('osaka') ?? []) viaLines.add(edge.lineId);
+    expect(viaLines.has('tokaido')).toBe(true);
+    expect(viaLines.has('hankyu-kobe')).toBe(true);
+    expect(viaLines.has('hanshin')).toBe(true);
+
+    // JR の特急なら大阪から三宮まで 1 駅。阪急・阪神の特急は途中にもっと停まる。
+    expect(findReachable(graphs.ltd, 'osaka', 1, 'ltd').map((o) => o.stationId)).toContain(
+      'sannomiya',
+    );
+    const byLtd3 = findReachable(graphs.ltd, 'osaka', 3, 'ltd').map((o) => o.stationId);
+    expect(byLtd3).toContain('hq-shukugawa');
+    expect(byLtd3).toContain('hs-nishinomiya');
+  });
+
+  it('大阪環状線が一周して閉じている', () => {
+    // 末尾の福島と先頭の大阪が隣り合っていること。
+    const fromFukushima = graphs.local.get('fukushima') ?? [];
+    expect(fromFukushima.some((e) => e.to === 'osaka')).toBe(true);
+    // 環状なので、大阪から19駅進むと大阪に戻る……ことはない（同じ駅を二度通れない）。
+    // かわりに、どちら回りでも天王寺に行けることを確かめる。
+    const around = findReachable(graphs.local, 'osaka', 10, 'local');
+    expect(around.map((o) => o.stationId)).toContain('tennoji');
+  });
+
+  it('新大阪まで新幹線が通っている', () => {
+    expect(availableTypes(graphs, 'shinosaka')).toContain('shinkansen');
+    // 岡山から東へ 相生・姫路・西明石 と進み、4駅目が新大阪。
+    const reach = findReachable(graphs.shinkansen, 'okayama', 4, 'shinkansen');
+    expect(reach.map((o) => o.stationId)).toContain('shinosaka');
+  });
+
   it('岡山〜広島は在来線特急では移動できず、新幹線なら数駅で着く', () => {
     // 山陽本線に定期特急が走っていないことがグラフに出ている。
     expect(availableTypes(graphs, 'hiroshima')).not.toContain('ltd');

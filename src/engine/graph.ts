@@ -58,9 +58,16 @@ export function buildGraph(data: GameData, type: TrainType): Graph {
       segment.push(approxRailDistanceKm(a, b));
     }
 
+    // 環状線は末尾と先頭も隣り合っているので、その一組を余分に張る。
+    const pairs: [StationId, StationId][] = [];
     for (let k = 0; k + 1 < stops.length; k++) {
-      const from = stops[k] as StationId;
-      const to = stops[k + 1] as StationId;
+      pairs.push([stops[k] as StationId, stops[k + 1] as StationId]);
+    }
+    if (line.isLoop && stops.length >= 3) {
+      pairs.push([stops[stops.length - 1] as StationId, stops[0] as StationId]);
+    }
+
+    for (const [from, to] of pairs) {
       const fi = indexOf.get(from);
       const ti = indexOf.get(to);
       if (fi === undefined || ti === undefined) {
@@ -69,11 +76,22 @@ export function buildGraph(data: GameData, type: TrainType): Graph {
       const lo = Math.min(fi, ti);
       const hi = Math.max(fi, ti);
 
-      let distanceKm = 0;
-      for (let s = lo; s < hi; s++) distanceKm += segment[s] as number;
+      // 環状線を閉じる一組は路線上で末尾→先頭に戻るため、
+      // 区間距離の積算では求まらない。両端の直線距離で近似する。
+      const isClosing = line.isLoop === true && lo === 0 && hi === line.stations.length - 1;
 
-      const between = line.stations.slice(lo + 1, hi);
-      const via = fi < ti ? between : [...between].reverse();
+      let distanceKm = 0;
+      let via: StationId[] = [];
+      if (isClosing) {
+        const a = data.stations[line.stations[hi] as StationId];
+        const b = data.stations[line.stations[lo] as StationId];
+        if (!a || !b) throw new Error(`unknown station in loop ${line.id}`);
+        distanceKm = approxRailDistanceKm(a, b);
+      } else {
+        for (let s = lo; s < hi; s++) distanceKm += segment[s] as number;
+        const between = line.stations.slice(lo + 1, hi);
+        via = fi < ti ? between : [...between].reverse();
+      }
 
       addEdge(graph, from, { to, distanceKm, via, lineId: line.id });
       addEdge(graph, to, {

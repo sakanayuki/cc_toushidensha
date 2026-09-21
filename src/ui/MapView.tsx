@@ -140,7 +140,15 @@ export function MapView({
   }, [data]);
 
   const tiers = useMemo(() => buildTiers(data), [data]);
-  const fullBox = useMemo(() => boxOf([...points.values()], 12), [points]);
+  /**
+   * 全駅が入る範囲。駅名は点の右に描くので、端の駅のラベルがはみ出さないよう
+   * 範囲に比例した余白を取る。
+   */
+  const fullBox = useMemo(() => {
+    const all = [...points.values()];
+    const bare = boxOf(all, 0);
+    return boxOf(all, Math.max(40, Math.max(bare.w, bare.h) * 0.05));
+  }, [points]);
 
   // 地図は無くてもゲームは成立するので、非同期に読み込んで届いたら描く。
   const [prefectures, setPrefectures] = useState<PrefShape[] | null>(null);
@@ -314,10 +322,14 @@ export function MapView({
         continue;
       }
       const size = pr === 0 ? fontSize * 1.15 : fontSize;
+      // 右端に近い駅は、ラベルを点の左側に出して画面からはみ出さないようにする。
+      const flip = p.x > view.x + view.w * 0.78;
+      const width = station.name.length * size;
+      const left = flip ? p.x - unit * 1.3 - width : p.x + unit * 1.3;
       const box = {
-        x1: p.x + unit * 1.3,
+        x1: left,
         y1: p.y - unit * 1.1 - size,
-        x2: p.x + unit * 1.3 + station.name.length * size,
+        x2: left + width,
         y2: p.y - unit * 1.1 + size * 0.25,
       };
       const overlaps = placed.some(
@@ -465,12 +477,14 @@ export function MapView({
           const p = points.get(station.id);
           if (!p || !visibleLabels.has(station.id)) return null;
           const target = targetSet.has(station.id);
+          const flip = p.x > view.x + view.w * 0.78;
           return (
             <text
               key={`l-${station.id}`}
               className={target ? 'station-label station-label--target' : 'station-label'}
-              x={p.x + unit * 1.3}
+              x={flip ? p.x - unit * 1.3 : p.x + unit * 1.3}
               y={p.y - unit * 1.1}
+              textAnchor={flip ? 'end' : 'start'}
               fontSize={target ? fontSize * 1.15 : fontSize}
             >
               {station.name}

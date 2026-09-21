@@ -187,14 +187,170 @@ export const LINES: Line[] = [
     operator: 'JR西日本',
     color: '#1d4ed8',
     isShinkansen: true,
-    // 新尾道・東広島は在来線と接続しない新幹線単独駅なので、今回は収録していない。
-    stations: ['okayama', 'shinkurashiki', 'fukuyama', 'mihara', 'hiroshima'],
+    // 新尾道・東広島・新神戸は在来線と接続しない新幹線単独駅なので、今回は収録していない。
+    stations: [
+      'shinosaka', 'nishiakashi', 'himeji', 'aioi', 'okayama', 'shinkurashiki',
+      'fukuyama', 'mihara', 'hiroshima',
+    ],
     stops: {
       local: [],
       express: [],
       ltd: [],
       // のぞみ・ひかり・こだまの停車駅の和集合。
-      shinkansen: ['okayama', 'shinkurashiki', 'fukuyama', 'mihara', 'hiroshima'],
+      shinkansen: [
+        'shinosaka', 'nishiakashi', 'himeji', 'aioi', 'okayama', 'shinkurashiki',
+        'fukuyama', 'mihara', 'hiroshima',
+      ],
+    },
+  },
+  {
+    id: 'sanyo-east',
+    name: '山陽本線',
+    operator: 'JR西日本',
+    color: '#0ea5e9',
+    // 岡山から東は同じ山陽本線だが、停車パターンが西側と大きく違うので別の路線として持つ。
+    // 岡山で接続するのでグラフ上は一本に繋がる。
+    stations: [
+      'okayama', 'nishigawara', 'higashiokayama', 'jodo', 'seto', 'mandomi', 'kumayama',
+      'wake', 'yoshinaga', 'mitsuishi', 'kamigori', 'une', 'aioi', 'tatsuno', 'aboshi',
+      'harimakatsuhara', 'agaho', 'himeji', 'gochaku', 'himejibessho', 'sone', 'hoden',
+      'kakogawa', 'higashikakogawa', 'tsuchiyama', 'uozumi', 'okubo', 'nishiakashi',
+      'akashi', 'asagiri', 'maiko', 'tarumi', 'shioya', 'suma', 'sumakaihinkoen',
+      'takatori', 'shinnagata', 'hyogo', 'kobe',
+    ],
+    stops: {
+      local: [
+        'okayama', 'nishigawara', 'higashiokayama', 'jodo', 'seto', 'mandomi', 'kumayama',
+        'wake', 'yoshinaga', 'mitsuishi', 'kamigori', 'une', 'aioi', 'tatsuno', 'aboshi',
+        'harimakatsuhara', 'agaho', 'himeji', 'gochaku', 'himejibessho', 'sone', 'hoden',
+        'kakogawa', 'higashikakogawa', 'tsuchiyama', 'uozumi', 'okubo', 'nishiakashi',
+        'akashi', 'asagiri', 'maiko', 'tarumi', 'shioya', 'suma', 'sumakaihinkoen',
+        'takatori', 'shinnagata', 'hyogo', 'kobe',
+      ],
+      // 新快速と快速。岡山〜相生に定期の快速は走らないので、急行は相生から東だけ繋がる。
+      express: [
+        'aioi', 'himeji', 'kakogawa', 'higashikakogawa', 'tsuchiyama', 'nishiakashi',
+        'akashi', 'tarumi', 'suma', 'shinnagata', 'hyogo', 'kobe',
+      ],
+      // スーパーはくと（上郡で智頭急行へ入る）。岡山〜姫路の山陽本線に他の定期特急はない。
+      ltd: ['kamigori', 'himeji', 'kobe'],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'tokaido',
+    name: '東海道本線',
+    operator: 'JR西日本',
+    color: '#2563eb',
+    stations: [
+      'kobe', 'motomachi', 'sannomiya', 'nada', 'maya', 'rokkomichi', 'sumiyoshi',
+      'settsumotoyama', 'konanyamate', 'ashiya', 'sakurashukugawa', 'nishinomiya',
+      'koshienguchi', 'tachibana', 'amagasaki', 'tsukamoto', 'osaka', 'shinosaka',
+    ],
+    stops: {
+      local: [
+        'kobe', 'motomachi', 'sannomiya', 'nada', 'maya', 'rokkomichi', 'sumiyoshi',
+        'settsumotoyama', 'konanyamate', 'ashiya', 'sakurashukugawa', 'nishinomiya',
+        'koshienguchi', 'tachibana', 'amagasaki', 'tsukamoto', 'osaka', 'shinosaka',
+      ],
+      // 新快速と快速の和集合。
+      express: [
+        'kobe', 'motomachi', 'sannomiya', 'rokkomichi', 'sumiyoshi', 'ashiya',
+        'nishinomiya', 'koshienguchi', 'amagasaki', 'tsukamoto', 'osaka', 'shinosaka',
+      ],
+      // スーパーはくと・こうのとり・はまかぜなどの特急。
+      ltd: ['kobe', 'sannomiya', 'osaka', 'shinosaka'],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'osaka-loop',
+    name: '大阪環状線',
+    operator: 'JR西日本',
+    color: '#dc2626',
+    isLoop: true,
+    // 外回りの順。末尾の福島から先頭の大阪へ戻って一周する。
+    stations: [
+      'osaka', 'temma', 'sakuranomiya', 'kyobashi', 'osakajokoen', 'morinomiya',
+      'tamatsukuri', 'tsuruhashi', 'momodani', 'teradacho', 'tennoji', 'shinimamiya',
+      'imamiya', 'ashiharabashi', 'taisho', 'bentencho', 'nishikujo', 'noda', 'fukushima',
+    ],
+    stops: {
+      local: [
+        'osaka', 'temma', 'sakuranomiya', 'kyobashi', 'osakajokoen', 'morinomiya',
+        'tamatsukuri', 'tsuruhashi', 'momodani', 'teradacho', 'tennoji', 'shinimamiya',
+        'imamiya', 'ashiharabashi', 'taisho', 'bentencho', 'nishikujo', 'noda', 'fukushima',
+      ],
+      // 大和路快速・関空快速などが環状線内で通過運転をする区間の停車駅。
+      express: [
+        'osaka', 'kyobashi', 'tsuruhashi', 'tennoji', 'shinimamiya', 'bentencho',
+        'nishikujo', 'fukushima',
+      ],
+      ltd: [],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'hankyu-kobe',
+    name: '阪急神戸本線',
+    operator: '阪急電鉄',
+    color: '#7c3aed',
+    // 起終点の大阪梅田・神戸三宮は、JR の大阪・三宮と同じ駅として扱う。
+    stations: [
+      'osaka', 'hq-nakatsu', 'hq-juso', 'hq-kanzakigawa', 'hq-sonoda', 'hq-tsukaguchi',
+      'hq-mukonoso', 'hq-nishinomiyakitaguchi', 'hq-shukugawa', 'hq-ashiyagawa',
+      'hq-okamoto', 'hq-mikage', 'hq-rokko', 'hq-ojikoen', 'hq-kasuganomichi', 'sannomiya',
+    ],
+    stops: {
+      local: [
+        'osaka', 'hq-nakatsu', 'hq-juso', 'hq-kanzakigawa', 'hq-sonoda', 'hq-tsukaguchi',
+        'hq-mukonoso', 'hq-nishinomiyakitaguchi', 'hq-shukugawa', 'hq-ashiyagawa',
+        'hq-okamoto', 'hq-mikage', 'hq-rokko', 'hq-ojikoen', 'hq-kasuganomichi', 'sannomiya',
+      ],
+      // 急行・通勤急行。
+      express: [
+        'osaka', 'hq-juso', 'hq-tsukaguchi', 'hq-nishinomiyakitaguchi', 'hq-shukugawa',
+        'hq-ashiyagawa', 'hq-okamoto', 'hq-rokko', 'sannomiya',
+      ],
+      // 阪急の「特急」はそのまま特急として扱う。
+      ltd: ['osaka', 'hq-juso', 'hq-nishinomiyakitaguchi', 'hq-shukugawa', 'hq-okamoto', 'sannomiya'],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'hanshin',
+    name: '阪神本線',
+    operator: '阪神電気鉄道',
+    color: '#f59e0b',
+    stations: [
+      'osaka', 'hs-fukushima', 'hs-noda', 'hs-yodogawa', 'hs-himejima', 'hs-chibune',
+      'hs-kuise', 'hs-daimotsu', 'hs-amagasaki', 'hs-deyashiki', 'hs-centerpool',
+      'hs-mukogawa', 'hs-naruo', 'hs-koshien', 'hs-kusugawa', 'hs-imazu', 'hs-nishinomiya',
+      'hs-korien', 'hs-uchide', 'hs-ashiya', 'hs-fukae', 'hs-aoki', 'hs-uozaki',
+      'hs-sumiyoshi', 'hs-mikage', 'hs-ishiyagawa', 'hs-shinzaike', 'hs-oishi',
+      'hs-nishinada', 'hs-iwaya', 'hs-kasuganomichi', 'sannomiya',
+    ],
+    stops: {
+      local: [
+        'osaka', 'hs-fukushima', 'hs-noda', 'hs-yodogawa', 'hs-himejima', 'hs-chibune',
+        'hs-kuise', 'hs-daimotsu', 'hs-amagasaki', 'hs-deyashiki', 'hs-centerpool',
+        'hs-mukogawa', 'hs-naruo', 'hs-koshien', 'hs-kusugawa', 'hs-imazu', 'hs-nishinomiya',
+        'hs-korien', 'hs-uchide', 'hs-ashiya', 'hs-fukae', 'hs-aoki', 'hs-uozaki',
+        'hs-sumiyoshi', 'hs-mikage', 'hs-ishiyagawa', 'hs-shinzaike', 'hs-oishi',
+        'hs-nishinada', 'hs-iwaya', 'hs-kasuganomichi', 'sannomiya',
+      ],
+      // 急行・快速急行の和集合。
+      express: [
+        'osaka', 'hs-noda', 'hs-chibune', 'hs-amagasaki', 'hs-koshien', 'hs-imazu',
+        'hs-nishinomiya', 'hs-ashiya', 'hs-fukae', 'hs-aoki', 'hs-uozaki', 'hs-mikage',
+        'sannomiya',
+      ],
+      // 直通特急。
+      ltd: [
+        'osaka', 'hs-amagasaki', 'hs-koshien', 'hs-nishinomiya', 'hs-ashiya', 'hs-uozaki',
+        'sannomiya',
+      ],
+      shinkansen: [],
     },
   },
 ];
