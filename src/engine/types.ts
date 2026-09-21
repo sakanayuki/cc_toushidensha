@@ -39,6 +39,8 @@ export const TROPHY_DRAW_COUNT = 5;
 export interface TrophyDef {
   id: TrophyId;
   name: string;
+  /** 常時表示の1行に収めるための短い名前。 */
+  shortName: string;
   /** 一覧に出す短い説明。 */
   description: string;
   /** 'max' = 値が大きい人が受賞、'min' = 小さい人が受賞。 */

@@ -42,17 +42,19 @@ export function TrophyBar({ standings, players }: Props) {
               className="trophy-cell md-ripple"
               onClick={() => setOpen((v) => !v)}
             >
-              <div className="trophy-cell__name">{def.name}</div>
-              <div className="trophy-cell__leader">
-                {leader && (
-                  <span className="player-dot" style={{ background: leader.color }} />
-                )}
-                <span>{leader?.name ?? '—'}</span>
-                <span className="trophy-cell__value">
-                  {isTiedAtTop(standing) && <span className="md-chip md-chip--small">同点</span>}
-                  {top?.display ?? '—'}
-                </span>
-              </div>
+              <span className="trophy-cell__name">{def.shortName}</span>
+              {leader && (
+                <span
+                  className="player-dot player-dot--small"
+                  style={{ background: leader.color }}
+                />
+              )}
+              <span className="trophy-cell__leader">{leader?.name ?? '—'}</span>
+              <span className="trophy-cell__value">
+                {/* 同点は「=」で示す。展開すれば決着の理由まで読める。 */}
+                {isTiedAtTop(standing) && <span className="trophy-cell__tie">=</span>}
+                {top?.display ?? '—'}
+              </span>
             </button>
           );
         })}

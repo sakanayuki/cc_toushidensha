@@ -80,20 +80,23 @@ button {
 .trophies {
   flex: 0 0 auto;
   background: var(--md-sys-color-surface);
-  padding: 8px 8px 0;
+  padding: 6px 8px 0;
 }
 
 .trophies__grid {
   display: grid;
   grid-template-columns: repeat(2, 1fr);
-  gap: 6px;
+  gap: 4px;
 }
 
+/* 1行に収めて高さを抑える。地図と操作パネルに面積を譲るため。 */
 .trophy-cell {
-  display: block;
+  display: flex;
+  align-items: center;
+  gap: 5px;
   text-align: left;
-  padding: 8px 12px;
-  border-radius: var(--md-sys-shape-corner-large);
+  padding: 4px 8px;
+  border-radius: var(--md-sys-shape-corner-medium);
   background: var(--md-sys-color-surface-container-highest);
   color: var(--md-sys-color-on-surface);
   min-width: 0;
@@ -112,24 +115,18 @@ button {
 }
 
 .trophy-cell__name {
-  font-size: var(--md-sys-typescale-label-small-size);
+  font-size: 10px;
+  line-height: 1.4;
   color: var(--md-sys-color-on-surface-variant);
-  overflow: hidden;
-  text-overflow: ellipsis;
+  flex: 0 0 auto;
   white-space: nowrap;
 }
 
 .trophy-cell__leader {
-  display: flex;
-  align-items: center;
-  gap: 6px;
-  margin-top: 2px;
-  font-size: var(--md-sys-typescale-title-small-size);
+  font-size: var(--md-sys-typescale-label-medium-size);
+  line-height: 1.4;
   font-weight: var(--md-sys-typescale-weight-emphasized);
   min-width: 0;
-}
-
-.trophy-cell__leader > span:first-of-type {
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -137,19 +134,23 @@ button {
 
 .trophy-cell__value {
   margin-left: auto;
-  font-size: var(--md-sys-typescale-label-medium-size);
+  font-size: 11px;
+  line-height: 1.4;
   font-weight: var(--md-sys-typescale-weight-medium);
   color: var(--md-sys-color-on-surface-variant);
   flex: 0 0 auto;
-  display: flex;
-  align-items: center;
-  gap: 4px;
+  font-variant-numeric: tabular-nums;
+}
+
+.trophy-cell__tie {
+  color: var(--md-sys-color-tertiary);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
 }
 
 .trophies__toggle {
   width: 100%;
-  padding: 6px;
-  margin-top: 4px;
+  padding: 3px;
+  margin-top: 2px;
   border-radius: var(--md-sys-shape-corner-full);
   font-size: var(--md-sys-typescale-label-medium-size);
   font-weight: var(--md-sys-typescale-weight-medium);
@@ -238,9 +239,10 @@ button {
 /* ── 地図 ── */
 
 .map {
+  /* 縦が足りないときは地図が先に縮む。操作パネルを画面内に保つため。 */
   flex: 1 1 auto;
   position: relative;
-  min-height: 180px;
+  min-height: 140px;
   margin: 8px;
   border-radius: var(--md-sys-shape-corner-extra-large);
   overflow: hidden;
@@ -341,9 +343,17 @@ button {
 /* ── 操作パネル ── */
 
 .panel {
-  flex: 0 0 auto;
+  /*
+   * flex アイテムは min-height の既定が auto なので、そのままだと内容より小さくならず、
+   * 縦が足りないときにパネルごと画面の外へ押し出されてしまう。
+   * min-height: 0 と flex-shrink を効かせて、画面内に収まる高さまで縮ませる。
+   * 中身は overflow-y でスクロールできるので、項目が多くても最後まで届く。
+   */
+  flex: 0 1 auto;
+  min-height: 0;
   max-height: 46vh;
   overflow-y: auto;
+  overscroll-behavior: contain;
   padding: 12px 12px calc(12px + env(safe-area-inset-bottom, 0px));
   background: var(--md-sys-color-surface-container);
   border-radius: var(--md-sys-shape-corner-extra-large) var(--md-sys-shape-corner-extra-large) 0 0;

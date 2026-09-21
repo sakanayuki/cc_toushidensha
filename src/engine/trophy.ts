@@ -12,6 +12,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   scale_total: {
     id: 'scale_total',
     name: '産業規模の合計',
+    shortName: '規模合計',
     description: '投資した産業の規模の総和が最大',
     direction: 'max',
     format: round,
@@ -19,6 +20,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   max_profit_rate: {
     id: 'max_profit_rate',
     name: '最大利益率',
+    shortName: '利益率',
     description: '保有する産業の利益率の最大値が最も高い',
     direction: 'max',
     format: (v) => `${v.toFixed(1)}%`,
@@ -26,6 +28,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   best3_count: {
     id: 'best3_count',
     name: '全国ベスト3',
+    shortName: 'ベスト3',
     description: '全国区カテゴリでトップ3の産業を最も多く保有',
     direction: 'max',
     format: (v) => `${v}個`,
@@ -33,6 +36,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   sector1_count: {
     id: 'sector1_count',
     name: '第一次産業',
+    shortName: '一次産業',
     description: '第一次産業を最も多く保有',
     direction: 'max',
     format: (v) => `${v}個`,
@@ -40,6 +44,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   sector2_count: {
     id: 'sector2_count',
     name: '第二次産業',
+    shortName: '二次産業',
     description: '第二次産業を最も多く保有',
     direction: 'max',
     format: (v) => `${v}個`,
@@ -47,6 +52,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   sector3_count: {
     id: 'sector3_count',
     name: '第三次産業',
+    shortName: '三次産業',
     description: '第三次産業を最も多く保有',
     direction: 'max',
     format: (v) => `${v}個`,
@@ -54,6 +60,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   distance: {
     id: 'distance',
     name: '旅の距離',
+    shortName: '距離',
     description: '開始駅と最終地点の直線距離が最長',
     direction: 'max',
     format: (v) => `${Math.round(v)}km`,
@@ -61,6 +68,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   fare_min: {
     id: 'fare_min',
     name: '節約王',
+    shortName: '節約',
     description: '交通費の合計が最少',
     direction: 'min',
     format: round,
@@ -68,6 +76,7 @@ export const TROPHY_DEFS: Record<TrophyId, TrophyDef> = {
   rural: {
     id: 'rural',
     name: '地方創生',
+    shortName: '地方創生',
     description: '最も産業規模の小さい産業に投資した',
     direction: 'min',
     format: (v) => (Number.isFinite(v) ? round(v) : '—'),
