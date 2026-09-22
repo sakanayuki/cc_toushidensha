@@ -365,6 +365,13 @@ button {
   margin-bottom: 10px;
 }
 
+/* サイコロを添える見出し。 */
+.panel__title--dice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .panel__list {
   display: flex;
   flex-direction: column;
@@ -398,28 +405,114 @@ button {
   animation: thinking 1.2s var(--md-sys-motion-easing-emphasized) infinite;
 }
 
-.dice-face {
-  font-size: 44px;
-  line-height: 1;
+/* ── サイコロ ── */
+
+/*
+ * CSS の 3D 変換で組んだ立方体。6枚の面を回転で貼り合わせている。
+ * 転がすときは目的の面の角度に何周か足して回すので、
+ * 止まったときに出目の面が正面を向く。
+ */
+.dice {
+  --dice-size: 56px;
+  --dice-half: 28px;
+  width: var(--dice-size);
+  height: var(--dice-size);
+  perspective: 420px;
 }
 
-@keyframes dice-roll {
+/* 投げ上げたような上下動。回転とは別のレイヤーに分けてある。 */
+.dice--tossing {
+  animation: dice-toss var(--dice-toss-duration, 1100ms)
+    var(--md-sys-motion-easing-standard);
+}
+
+@keyframes dice-toss {
   0% {
-    transform: rotate(0) scale(1);
+    transform: translateY(0) scale(1);
   }
-  55% {
-    transform: rotate(220deg) scale(1.3);
+  35% {
+    transform: translateY(-26px) scale(1.12);
+  }
+  70% {
+    transform: translateY(2px) scale(0.96);
+  }
+  85% {
+    transform: translateY(-4px) scale(1.02);
   }
   100% {
-    transform: rotate(360deg) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-.dice-face--rolling {
-  animation: dice-roll var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-spring-bouncy);
+/* 結果表示に添える小さいサイコロ。 */
+.dice--small {
+  --dice-size: 34px;
+  --dice-half: 17px;
+  flex: 0 0 auto;
+}
+
+.dice--small .dice__face {
+  border-radius: 7px;
+  padding: 3px;
+}
+
+.dice--small .dice__pip,
+.dice--small .dice__pip--empty {
+  width: 6px;
+  height: 6px;
+}
+
+.dice__cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.16, 0.9, 0.3, 1);
+}
+
+.dice__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  padding: 5px;
+  border-radius: 10px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: inset 0 0 8px rgb(0 0 0 / 12%);
+  backface-visibility: hidden;
+}
+
+.dice__pip {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-on-surface);
+}
+
+/* 目の無いマス。グリッドの位置を揃えるためだけに置く。 */
+.dice__pip--empty {
+  width: 9px;
+  height: 9px;
 }
 
 /* ── セットアップ・結果画面 ── */
+
+/*
+ * 設定とプレイヤーのまとまり。縦長では箱として存在せず、中身がそのまま縦に並ぶ。
+ * 横長のときだけ2カラムの実体になる（末尾のメディアクエリ）。
+ */
+.setup__settings,
+.setup__players {
+  display: contents;
+}
+
+.setup__start {
+  margin-top: 24px;
+}
 
 .screen {
   height: 100dvh;
@@ -565,6 +658,29 @@ button {
   list-style-position: inside;
 }
 
+/*
+ * おすすめの開始駅。今回のトロフィー5枚に向いている駅を強調する。
+ * 枠線で示すのは、押せない／選ばれているといった状態と混同されないため。
+ */
+.md-list-item--recommended {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.md-list-item--recommended .md-list-item__supporting,
+.md-list-item--recommended .md-list-item__trailing {
+  color: var(--md-sys-color-on-primary-container);
+  opacity: 0.85;
+}
+
+.md-chip--recommended {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
+}
+
 /* 新幹線はその駅に停まるときだけ現れる4つ目の選択肢なので、色で別格だと分かるようにする。 */
 .md-list-item--shinkansen {
   background: var(--md-sys-color-tertiary-container);
@@ -633,13 +749,191 @@ button {
     border-radius: var(--md-sys-shape-corner-large);
   }
 
+  /* ── タイトル画面 ── */
+
+  .screen {
+    max-width: 1000px;
+    padding: 20px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'title    title'
+      'lead     lead'
+      'settings players'
+      'howto    howto';
+    align-content: start;
+    column-gap: 32px;
+  }
+
+  .screen__title {
+    grid-area: title;
+  }
+
+  .screen__lead {
+    grid-area: lead;
+    max-width: 78ch;
+  }
+
+  .setup__settings,
+  .setup__players {
+    display: block;
+    min-width: 0;
+  }
+
+  .setup__settings {
+    grid-area: settings;
+  }
+
+  .setup__players {
+    grid-area: players;
+  }
+
+  .how-to {
+    grid-area: howto;
+    margin-top: 16px;
+  }
+
+  /* ── 操作パネル ── */
+
   .panel {
     grid-area: panel;
     /* 縦積みのときの「画面の46%まで」ではなく、右カラムの余りを全部使う。 */
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     max-height: none;
+    overflow: hidden;
     margin: 8px 8px 8px 4px;
     padding-bottom: 12px;
     border-radius: var(--md-sys-shape-corner-extra-large);
+  }
+
+  /*
+   * 画面が低い横長（スマホの横持ちなど）では、トロフィー帯を詰めて
+   * 操作パネルに高さを譲る。ここが数十ピクセル変わるだけで、
+   * 選択肢がスクロールせずに収まるかどうかが変わる。
+   */
+  @media (max-height: 560px) {
+    .trophies {
+      padding: 6px 8px 0 4px;
+    }
+
+    .trophies__grid {
+      gap: 3px;
+    }
+
+    .trophy-cell {
+      padding: 1px 7px;
+    }
+
+    .trophy-cell__name,
+    .trophy-cell__value {
+      font-size: 10px;
+    }
+
+    .trophy-cell__leader {
+      font-size: 11px;
+    }
+
+    .trophies__toggle {
+      padding: 1px;
+      margin-top: 1px;
+      font-size: 11px;
+    }
+  }
+
+  /* 見出しに高さを取られると選択肢に回せる高さが減るので、横長では控えめにする。 */
+  .panel__title {
+    flex: 0 0 auto;
+    font-size: var(--md-sys-typescale-label-medium-size);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  /*
+   * 一覧が枠の余りを全部受け取る。ControlPanel はこの高さを行数で割って
+   * 詰め具合（normal / dense / tight）を決める。
+   */
+  .panel__list {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /*
+   * 詰めるときは grid にして、行の高さを枠に合わせて均等に割る。
+   * こうしないと行が自然高のままで、結局スクロールが出てしまう。
+   */
+  .panel__list--dense,
+  .panel__list--tight {
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .panel__list--dense > *,
+  .panel__list--tight > * {
+    overflow: hidden;
+  }
+
+  .panel__list--dense {
+    gap: 6px;
+  }
+
+  .panel__list--dense .md-list-item {
+    padding: 6px 12px;
+  }
+
+  .panel__list--dense .md-list-item__supporting {
+    margin-top: 0;
+    font-size: var(--md-sys-typescale-label-medium-size);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* さらに入らないときは1行に畳む。駅名と産業を横に並べる。 */
+  .panel__list--tight {
+    gap: 4px;
+  }
+
+  .panel__list--tight .md-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 10px;
+  }
+
+  /*
+   * 1行に畳むときは行送りも詰める。既定の line-height のままだと
+   * 枠からはみ出して文字の上下が切れる。
+   */
+  .panel__list--tight .md-list-item__headline {
+    flex: 0 0 auto;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .panel__list--tight .md-list-item__supporting {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-top: 0;
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 畳んだ行では「特急停車」チップも小さくする。 */
+  .panel__list--tight .md-chip {
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  /* 1行に畳むと「運賃」の右寄せが効かなくなるので、産業名の側に寄せる。 */
+  .panel__list--tight .md-list-item__trailing {
+    margin-left: 0;
   }
 }

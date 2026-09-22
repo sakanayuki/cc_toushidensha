@@ -10,6 +10,15 @@
  */
 
 import japanUrl from './japan.json?url';
+import lineShapes from './lineShapes.json';
+
+/**
+ * 路線の実際の線形。[緯度, 経度] の並びで、路線IDから引く。
+ * 停車駅を直線で結ぶと、駅間の長い新幹線が瀬戸内海を横切ってしまうため、
+ * 描画にはこちらを使う（scripts/build-line-shapes.py が生成）。
+ * 全14路線で 24KB と小さいので、地図本体と違ってバンドルに同梱する。
+ */
+export const LINE_SHAPES = lineShapes as unknown as Record<string, [number, number][]>;
 
 /** 出典表記。利用条件として明記が必要。 */
 export const JAPAN_GEO_ATTRIBUTION = '地図: 地球地図日本（国土地理院）';

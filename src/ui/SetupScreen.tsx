@@ -12,11 +12,20 @@ import type { Difficulty, PlayerConfig } from '../engine/types';
  */
 export const PLAYER_COLORS = ['#ff8a65', '#4fc3f7', '#aed581', '#f06292'];
 
-const DEFAULT_NAMES = ['あなた', 'CPU 1', 'CPU 2', 'CPU 3'];
+/**
+ * 既定の名前。人間か CPU かで使い分ける。
+ * 種別を切り替えたとき、名前がまだ既定のままなら相手側の既定に置き換える。
+ * 「CPU 1」という名前のまま人間として遊ぶことになるのを避けるため。
+ */
+const humanName = (index: number) => (index === 0 ? 'あなた' : `だれか${index}`);
+const cpuName = (index: number) => (index === 0 ? 'CPU' : `CPU ${index}`);
+
+const isDefaultName = (name: string, index: number) =>
+  name === humanName(index) || name === cpuName(index);
 
 function defaultPlayers(count: number): PlayerConfig[] {
   return Array.from({ length: count }, (_, i) => ({
-    name: DEFAULT_NAMES[i] ?? `P${i + 1}`,
+    name: i === 0 ? humanName(i) : cpuName(i),
     isCPU: i !== 0,
     difficulty: 'normal' as Difficulty,
     color: PLAYER_COLORS[i] ?? '#b0bec5',
@@ -45,6 +54,17 @@ export function SetupScreen({ onStart, onResume }: Props) {
     setPlayers((prev) => prev.map((p, i) => (i === index ? { ...p, ...patch } : p)));
   };
 
+  /** 人間 ⇄ CPU の切り替え。名前を自分で付けていなければ、それらしい名前に入れ替える。 */
+  const setIsCPU = (index: number, isCPU: boolean) => {
+    setPlayers((prev) =>
+      prev.map((p, i) => {
+        if (i !== index) return p;
+        const name = isDefaultName(p.name, i) ? (isCPU ? cpuName(i) : humanName(i)) : p.name;
+        return { ...p, isCPU, name };
+      }),
+    );
+  };
+
   return (
     <div className="screen">
       <h1 className="screen__title md-display-small">投資電車</h1>
@@ -54,97 +74,105 @@ export function SetupScreen({ onStart, onResume }: Props) {
         {LINES.length}路線{STATIONS.length}駅を収録しています。
       </p>
 
-      {onResume && (
-        <>
-          <h2 className="screen__section md-title-small">前回の続き</h2>
+      {/*
+        横長のときだけ実体のある2カラムになる（app.css）。
+        縦長では display:contents で透過するので、見た目も読み上げ順も今までどおり。
+      */}
+      <section className="setup__settings">
+        {onResume && (
+          <>
+            <h2 className="screen__section md-title-small">前回の続き</h2>
+            <button
+              type="button"
+              className="md-button md-button--filled md-button--large md-button--full md-ripple"
+              onClick={onResume}
+            >
+              続きから再開する
+            </button>
+          </>
+        )}
+
+        <h2 className="screen__section md-title-small">ターン数</h2>
+        <div className="md-segmented">
+          {TURN_OPTIONS.map((t) => (
+            <button
+              key={t}
+              type="button"
+              className="md-ripple"
+              aria-pressed={turns === t}
+              onClick={() => setTurns(t)}
+            >
+              {t}
+            </button>
+          ))}
+        </div>
+        <p className="screen__note">
+          1ターンにつき1駅ぶん投資できます。{turns} 回の投資で勝負が決まります。
+        </p>
+
+        <h2 className="screen__section md-title-small">人数</h2>
+        <div className="md-segmented">
+          {[1, 2, 3, 4].map((n) => (
+            <button
+              key={n}
+              type="button"
+              className="md-ripple"
+              aria-pressed={count === n}
+              onClick={() => setCountAndPlayers(n)}
+            >
+              {n}人
+            </button>
+          ))}
+        </div>
+      </section>
+
+      <section className="setup__players">
+        <h2 className="screen__section md-title-small">プレイヤー</h2>
+        {players.map((player, i) => (
+          <div className="player-row" key={i}>
+            <span className="player-dot" style={{ background: player.color }} />
+            <input
+              className="md-text-field"
+              value={player.name}
+              maxLength={8}
+              onChange={(e) => update(i, { name: e.target.value })}
+              aria-label={`プレイヤー${i + 1}の名前`}
+            />
+            <select
+              className="md-select"
+              value={player.isCPU ? 'cpu' : 'human'}
+              onChange={(e) => setIsCPU(i, e.target.value === 'cpu')}
+              aria-label={`プレイヤー${i + 1}の種別`}
+            >
+              <option value="human">人間</option>
+              <option value="cpu">CPU</option>
+            </select>
+            <select
+              className="md-select"
+              value={player.difficulty}
+              disabled={!player.isCPU}
+              onChange={(e) => update(i, { difficulty: e.target.value as Difficulty })}
+              aria-label={`プレイヤー${i + 1}の難易度`}
+            >
+              {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
+                <option key={d} value={d}>
+                  {DIFFICULTY_LABEL[d]}
+                </option>
+              ))}
+            </select>
+          </div>
+        ))}
+
+        <div className="setup__start">
           <button
             type="button"
             className="md-button md-button--filled md-button--large md-button--full md-ripple"
-            onClick={onResume}
+            onClick={() => onStart(turns, players)}
           >
-            続きから再開する
+            ゲーム開始
           </button>
-        </>
-      )}
-
-      <h2 className="screen__section md-title-small">ターン数</h2>
-      <div className="md-segmented">
-        {TURN_OPTIONS.map((t) => (
-          <button
-            key={t}
-            type="button"
-            className="md-ripple"
-            aria-pressed={turns === t}
-            onClick={() => setTurns(t)}
-          >
-            {t}
-          </button>
-        ))}
-      </div>
-      <p className="screen__note">
-        1ターンにつき1駅ぶん投資できます。{turns} 回の投資で勝負が決まります。
-      </p>
-
-      <h2 className="screen__section md-title-small">人数</h2>
-      <div className="md-segmented">
-        {[1, 2, 3, 4].map((n) => (
-          <button
-            key={n}
-            type="button"
-            className="md-ripple"
-            aria-pressed={count === n}
-            onClick={() => setCountAndPlayers(n)}
-          >
-            {n}人
-          </button>
-        ))}
-      </div>
-
-      <h2 className="screen__section md-title-small">プレイヤー</h2>
-      {players.map((player, i) => (
-        <div className="player-row" key={i}>
-          <span className="player-dot" style={{ background: player.color }} />
-          <input
-            className="md-text-field"
-            value={player.name}
-            maxLength={8}
-            onChange={(e) => update(i, { name: e.target.value })}
-            aria-label={`プレイヤー${i + 1}の名前`}
-          />
-          <select
-            className="md-select"
-            value={player.isCPU ? 'cpu' : 'human'}
-            onChange={(e) => update(i, { isCPU: e.target.value === 'cpu' })}
-            aria-label={`プレイヤー${i + 1}の種別`}
-          >
-            <option value="human">人間</option>
-            <option value="cpu">CPU</option>
-          </select>
-          <select
-            className="md-select"
-            value={player.difficulty}
-            disabled={!player.isCPU}
-            onChange={(e) => update(i, { difficulty: e.target.value as Difficulty })}
-            aria-label={`プレイヤー${i + 1}の難易度`}
-          >
-            {(['easy', 'normal', 'hard'] as Difficulty[]).map((d) => (
-              <option key={d} value={d}>
-                {DIFFICULTY_LABEL[d]}
-              </option>
-            ))}
-          </select>
         </div>
-      ))}
-
-      <div style={{ marginTop: 24 }}>
-        <button
-          type="button"
-          className="md-button md-button--filled md-button--large md-button--full md-ripple"
-          onClick={() => onStart(turns, players)}
-        >
-          ゲーム開始
-        </button>
-      </div>
+      </section>
 
       <details className="how-to">
         <summary className="md-title-small">遊びかた</summary>
@@ -152,13 +180,17 @@ export function SetupScreen({ onStart, onResume }: Props) {
           1. サイコロを振る前に、普通・急行・特急のどれに乗るかを選びます。停車駅の数で進むので、
           普通で4駅先の駅が、急行なら1駅で着くこともあります。
           <br />
-          2. サイコロを振ると、ちょうどその数だけ先の停車駅が地図上に光ります。そこから1つ選んで移動します。
+          2.
+          サイコロを振ると、ちょうどその数だけ先の停車駅が地図上に光ります。そこから1つ選んで移動します。
           <br />
-          3. 到着した駅の産業を1つ選んで投資します。同じ産業は他の人も取れますが、自分では重複して持てません。
+          3.
+          到着した駅の産業を1つ選んで投資します。同じ産業は他の人も取れますが、自分では重複して持てません。
           <br />
-          4. 各ゲームでは9種類のトロフィーから5枚が抽選され、それぞれの1位が受賞。最多の人が優勝です。
+          4.
+          各ゲームでは9種類のトロフィーから5枚が抽選され、それぞれの1位が受賞。最多の人が優勝です。
           <br />
-          5. 乗れるのはその駅に停車する種別だけ。普通しか停まらない小駅に降りると、次も普通しか選べません。
+          5.
+          乗れるのはその駅に停車する種別だけ。普通しか停まらない小駅に降りると、次も普通しか選べません。
         </p>
       </details>
     </div>
