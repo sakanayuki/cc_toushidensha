@@ -10,11 +10,12 @@
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import {
   JAPAN_GEO_ATTRIBUTION,
+  LINE_SHAPES,
   loadJapanGeo,
   ringsOf,
   type JapanGeo,
 } from '../data/geo';
-import type { GameData, StationId } from '../data/types';
+import type { GameData, LineId, StationId } from '../data/types';
 import type { Player } from '../engine/types';
 
 /**
@@ -138,6 +139,24 @@ export function MapView({
     }
     return map;
   }, [data]);
+
+  /**
+   * 路線を描く点列。実測の線形（LINE_SHAPES）があればそれを使う。
+   * 無い路線は停車駅を直線で結ぶ。
+   */
+  const linePoints = useMemo(() => {
+    const map = new Map<LineId, string>();
+    for (const line of data.lines) {
+      const shape = LINE_SHAPES[line.id];
+      const xy = shape
+        ? shape.map(([lat, lon]) => project(lat, lon))
+        : line.stations
+            .map((id) => points.get(id))
+            .filter((p): p is { x: number; y: number } => !!p);
+      map.set(line.id, xy.map((p) => `${p.x.toFixed(1)},${p.y.toFixed(1)}`).join(' '));
+    }
+    return map;
+  }, [data, points]);
 
   const tiers = useMemo(() => buildTiers(data), [data]);
   /**
@@ -412,11 +431,7 @@ export function MapView({
         {data.lines.map((line) => (
           <polyline
             key={line.id}
-            points={line.stations
-              .map((id) => points.get(id))
-              .filter((p): p is { x: number; y: number } => !!p)
-              .map((p) => `${p.x},${p.y}`)
-              .join(' ')}
+            points={linePoints.get(line.id) ?? ''}
             fill="none"
             stroke={line.color}
             strokeWidth={unit * 0.8}

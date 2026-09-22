@@ -5,7 +5,8 @@
  * 普通で4駅／急行で1駅という本作のコアな判断を、振る前に下せるようにするため。
  */
 
-import { useState } from 'react';
+import { Children, useEffect, useRef, useState } from 'react';
+import type { ReactNode } from 'react';
 import {
   CONVENTIONAL_TRAIN_TYPES,
   FARE_COEFFICIENT,
@@ -29,6 +30,59 @@ interface Props {
   onRoll: () => void;
   onChooseDest: (id: StationId) => void;
   onChooseIndustry: (id: string) => void;
+}
+
+/** 横長2カラムに切り替える条件。app.css のメディアクエリと対応している。 */
+const LANDSCAPE_QUERY = '(min-width: 720px) and (min-aspect-ratio: 1 / 1)';
+
+type Density = 'normal' | 'dense' | 'tight';
+
+/**
+ * 選択肢の一覧。数が多いときは1行の高さを詰めて、スクロールせずに全部見えるようにする。
+ *
+ * 詰めるのは横長のときだけ。縦長ではパネルが内容に合わせて伸びるので、
+ * 高さを測っても「空いている高さ」が出ず、詰めるべきかどうかを判断できない。
+ * 横長ではパネルが右カラムの固定枠なので、1行あたりの高さがそのまま出る。
+ */
+function PanelList({ children }: { children: ReactNode }) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [density, setDensity] = useState<Density>('normal');
+  const count = Children.count(children);
+
+  useEffect(() => {
+    const el = ref.current;
+    if (!el) return undefined;
+    const media = window.matchMedia(LANDSCAPE_QUERY);
+
+    const measure = () => {
+      if (!media.matches || count === 0) {
+        setDensity('normal');
+        return;
+      }
+      const perRow = el.clientHeight / count;
+      // 1行に畳んでも 20px は要る（余白2+2 と 12px の文字）。
+      // それを切ったら文字が上下で切れるので、諦めてスクロールさせる。
+      // 読めない行が並ぶより、スクロールしてでも読めるほうがまし。
+      if (perRow < 20) setDensity('normal');
+      else setDensity(perRow >= 62 ? 'normal' : perRow >= 44 ? 'dense' : 'tight');
+    };
+
+    measure();
+    // 詰め具合を変えても枠の高さは変わらないので、測り直しても振動しない。
+    const observer = new ResizeObserver(measure);
+    observer.observe(el);
+    media.addEventListener('change', measure);
+    return () => {
+      observer.disconnect();
+      media.removeEventListener('change', measure);
+    };
+  }, [count]);
+
+  return (
+    <div ref={ref} className={`panel__list panel__list--${density}`}>
+      {children}
+    </div>
+  );
 }
 
 /** 特急停車駅かどうか。到達駅を選ぶときの重要な判断材料。 */
@@ -76,7 +130,7 @@ export function ControlPanel(props: Props) {
           <div className="panel__title">
             {player.name} の開始駅を選んでください（他の人と同じ駅でも構いません）
           </div>
-          <div className="panel__list">
+          <PanelList>
             {data.startStationIds.map((id) => {
               const station = data.stations[id];
               if (!station) return null;
@@ -98,7 +152,7 @@ export function ControlPanel(props: Props) {
                 </button>
               );
             })}
-          </div>
+          </PanelList>
         </div>
       );
 
@@ -141,12 +195,12 @@ export function ControlPanel(props: Props) {
       return (
         <div className="panel">
           <div className="panel__title">乗る列車を選んでください（サイコロはこの後）</div>
-          <div className="panel__list">
+          <PanelList>
             {CONVENTIONAL_TRAIN_TYPES.map((type) =>
               typeButton(type, selectableTypes.includes(type)),
             )}
             {canShinkansen && typeButton('shinkansen', true)}
-          </div>
+          </PanelList>
         </div>
       );
     }
@@ -186,7 +240,7 @@ export function ControlPanel(props: Props) {
               ? `この先は行き止まりのため、${options[0]?.steps}駅先までです`
               : '降りる駅を選んでください（地図の光っている駅もタップできます）'}
           </div>
-          <div className="panel__list">
+          <PanelList>
             {options.map((option) => {
               const station = data.stations[option.stationId];
               if (!station) return null;
@@ -215,7 +269,7 @@ export function ControlPanel(props: Props) {
                 </button>
               );
             })}
-          </div>
+          </PanelList>
         </div>
       );
     }
@@ -230,7 +284,7 @@ export function ControlPanel(props: Props) {
           <div className="panel__title">
             {station?.name} に到着。投資する産業を1つ選んでください
           </div>
-          <div className="panel__list">
+          <PanelList>
             {candidates.map((industry) => (
               <IndustryChoice
                 key={industry.id}
@@ -238,7 +292,7 @@ export function ControlPanel(props: Props) {
                 onClick={() => props.onChooseIndustry(industry.id)}
               />
             ))}
-          </div>
+          </PanelList>
         </div>
       );
     }

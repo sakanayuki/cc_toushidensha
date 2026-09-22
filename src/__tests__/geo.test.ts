@@ -8,6 +8,7 @@
 
 import { describe, expect, it } from 'vitest';
 import { LINES, STATIONS, STATION_MAP } from '../data';
+import { LINE_SHAPES } from '../data/geo';
 import japan from '../data/geo/japan.json';
 import type { JapanGeo, PrefectureFeature } from '../data/geo';
 import { ringsOf } from '../data/geo';
@@ -181,5 +182,53 @@ describe('南海本線と阪和線の位置関係', () => {
     }
 
     expect(inverted).toEqual([]);
+  });
+});
+
+
+describe('路線の線形', () => {
+  // 停車駅を直線で結ぶと、駅間の長い新幹線が瀬戸内海を横切ってしまう。
+  // scripts/build-line-shapes.py が実測の線形を書き出しているので、それを検証する。
+  it('すべての路線に線形がある', () => {
+    const missing = LINES.filter((l) => !LINE_SHAPES[l.id]).map((l) => l.name);
+    expect(missing).toEqual([]);
+  });
+
+  it('線形の両端が起点・終点の駅に一致する', () => {
+    const off: string[] = [];
+    for (const line of LINES) {
+      const shape = LINE_SHAPES[line.id];
+      if (!shape || shape.length < 2) continue;
+      // 環状線は末尾から先頭に戻るので、両端とも起点の駅になる。
+      const ends: [number[], string][] = [
+        [shape[0]!, line.stations[0]!],
+        [shape[shape.length - 1]!, line.isLoop ? line.stations[0]! : line.stations.at(-1)!],
+      ];
+      for (const [point, stationId] of ends) {
+        const station = STATION_MAP[stationId]!;
+        const km = Math.hypot(point[0]! - station.lat, point[1]! - station.lon) * 111;
+        if (km > 0.5) off.push(`${line.name}: ${station.name} と ${km.toFixed(2)}km ずれ`);
+      }
+    }
+    expect(off).toEqual([]);
+  });
+
+  it('線形が海の上を通らない', () => {
+    // 停車駅を直線で結んでいた頃は、新幹線の三原〜広島が瀬戸内海を横切っていた。
+    // 瀬戸大橋線だけは本当に海を渡るので対象から外す。
+    const rings = geo.features.flatMap((f) => ringsOf(f));
+    const offshore: string[] = [];
+
+    for (const line of LINES) {
+      if (line.id === 'setoohashi') continue;
+      for (const [lat, lon] of LINE_SHAPES[line.id] ?? []) {
+        if (rings.some((ring) => contains(ring, lon, lat))) continue;
+        const km = Math.min(...rings.map((ring) => distanceToRing(ring, lon, lat))) * 111;
+        // 海岸線の簡略化ぶんの許容。埋立地の際を走る区間があるので少し広めに取る。
+        if (km > 0.8) offshore.push(`${line.name} (${lat}, ${lon}) 陸まで${km.toFixed(2)}km`);
+      }
+    }
+
+    expect(offshore).toEqual([]);
   });
 });

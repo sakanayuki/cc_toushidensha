@@ -421,6 +421,19 @@ button {
 
 /* ── セットアップ・結果画面 ── */
 
+/*
+ * 設定とプレイヤーのまとまり。縦長では箱として存在せず、中身がそのまま縦に並ぶ。
+ * 横長のときだけ2カラムの実体になる（末尾のメディアクエリ）。
+ */
+.setup__settings,
+.setup__players {
+  display: contents;
+}
+
+.setup__start {
+  margin-top: 24px;
+}
+
 .screen {
   height: 100dvh;
   overflow-y: auto;
@@ -633,13 +646,191 @@ button {
     border-radius: var(--md-sys-shape-corner-large);
   }
 
+  /* ── タイトル画面 ── */
+
+  .screen {
+    max-width: 1000px;
+    padding: 20px 24px calc(24px + env(safe-area-inset-bottom, 0px));
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    grid-template-areas:
+      'title    title'
+      'lead     lead'
+      'settings players'
+      'howto    howto';
+    align-content: start;
+    column-gap: 32px;
+  }
+
+  .screen__title {
+    grid-area: title;
+  }
+
+  .screen__lead {
+    grid-area: lead;
+    max-width: 78ch;
+  }
+
+  .setup__settings,
+  .setup__players {
+    display: block;
+    min-width: 0;
+  }
+
+  .setup__settings {
+    grid-area: settings;
+  }
+
+  .setup__players {
+    grid-area: players;
+  }
+
+  .how-to {
+    grid-area: howto;
+    margin-top: 16px;
+  }
+
+  /* ── 操作パネル ── */
+
   .panel {
     grid-area: panel;
     /* 縦積みのときの「画面の46%まで」ではなく、右カラムの余りを全部使う。 */
+    display: flex;
+    flex-direction: column;
     min-height: 0;
     max-height: none;
+    overflow: hidden;
     margin: 8px 8px 8px 4px;
     padding-bottom: 12px;
     border-radius: var(--md-sys-shape-corner-extra-large);
+  }
+
+  /*
+   * 画面が低い横長（スマホの横持ちなど）では、トロフィー帯を詰めて
+   * 操作パネルに高さを譲る。ここが数十ピクセル変わるだけで、
+   * 選択肢がスクロールせずに収まるかどうかが変わる。
+   */
+  @media (max-height: 560px) {
+    .trophies {
+      padding: 6px 8px 0 4px;
+    }
+
+    .trophies__grid {
+      gap: 3px;
+    }
+
+    .trophy-cell {
+      padding: 1px 7px;
+    }
+
+    .trophy-cell__name,
+    .trophy-cell__value {
+      font-size: 10px;
+    }
+
+    .trophy-cell__leader {
+      font-size: 11px;
+    }
+
+    .trophies__toggle {
+      padding: 1px;
+      margin-top: 1px;
+      font-size: 11px;
+    }
+  }
+
+  /* 見出しに高さを取られると選択肢に回せる高さが減るので、横長では控えめにする。 */
+  .panel__title {
+    flex: 0 0 auto;
+    font-size: var(--md-sys-typescale-label-medium-size);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+
+  /*
+   * 一覧が枠の余りを全部受け取る。ControlPanel はこの高さを行数で割って
+   * 詰め具合（normal / dense / tight）を決める。
+   */
+  .panel__list {
+    flex: 1 1 auto;
+    min-height: 0;
+  }
+
+  /*
+   * 詰めるときは grid にして、行の高さを枠に合わせて均等に割る。
+   * こうしないと行が自然高のままで、結局スクロールが出てしまう。
+   */
+  .panel__list--dense,
+  .panel__list--tight {
+    display: grid;
+    grid-auto-rows: minmax(0, 1fr);
+  }
+
+  .panel__list--dense > *,
+  .panel__list--tight > * {
+    overflow: hidden;
+  }
+
+  .panel__list--dense {
+    gap: 6px;
+  }
+
+  .panel__list--dense .md-list-item {
+    padding: 6px 12px;
+  }
+
+  .panel__list--dense .md-list-item__supporting {
+    margin-top: 0;
+    font-size: var(--md-sys-typescale-label-medium-size);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* さらに入らないときは1行に畳む。駅名と産業を横に並べる。 */
+  .panel__list--tight {
+    gap: 4px;
+  }
+
+  .panel__list--tight .md-list-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 2px 10px;
+  }
+
+  /*
+   * 1行に畳むときは行送りも詰める。既定の line-height のままだと
+   * 枠からはみ出して文字の上下が切れる。
+   */
+  .panel__list--tight .md-list-item__headline {
+    flex: 0 0 auto;
+    gap: 6px;
+    font-size: 12px;
+    line-height: 1.3;
+  }
+
+  .panel__list--tight .md-list-item__supporting {
+    flex: 1 1 auto;
+    min-width: 0;
+    margin-top: 0;
+    text-align: right;
+    font-size: 11px;
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  /* 畳んだ行では「特急停車」チップも小さくする。 */
+  .panel__list--tight .md-chip {
+    height: 18px;
+    padding: 0 6px;
+    font-size: 10px;
+  }
+
+  /* 1行に畳むと「運賃」の右寄せが効かなくなるので、産業名の側に寄せる。 */
+  .panel__list--tight .md-list-item__trailing {
+    margin-left: 0;
   }
 }
