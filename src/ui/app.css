@@ -581,3 +581,65 @@ button {
   color: var(--md-sys-color-tertiary);
   font-weight: var(--md-sys-typescale-weight-emphasized);
 }
+
+/* ── 横長画面（PC・タブレット・スマホの横持ち）── */
+
+/*
+ * 縦積みのままだと、横長画面では地図が上下に潰れ、操作パネルは
+ * 幅いっぱいに間延びする。地図と操作列の2カラムに組み替える。
+ *
+ * 幅だけで切り替えると縦長のタブレット（iPad 縦 820px など）まで
+ * 2カラムになってしまうので、アスペクト比も条件に入れている。
+ *
+ * 要素の並べ替えは grid-template-areas だけで行い、DOM の順序は触らない。
+ * 縦積みのときの読み上げ順（トロフィー → 地図 → 操作）をそのまま保つため。
+ */
+@media (min-width: 720px) and (min-aspect-ratio: 1 / 1) {
+  .app {
+    max-width: 1600px;
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) clamp(320px, 30vw, 420px);
+    /*
+     * 3行目が操作パネル。余りの高さを全部取るが、最低 140px は確保する。
+     * そうしないと順位の詳細を開いたときにパネルが数ピクセルまで潰れる。
+     * 足りないぶんはトロフィー側が縮んでスクロールする。
+     */
+    grid-template-rows: auto minmax(0, auto) minmax(140px, 1fr);
+    grid-template-areas:
+      'bar bar'
+      'map trophies'
+      'map panel';
+  }
+
+  .app > .md-top-app-bar {
+    grid-area: bar;
+  }
+
+  .map {
+    grid-area: map;
+    margin: 8px 4px 8px 8px;
+  }
+
+  .trophies {
+    grid-area: trophies;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 8px 8px 0 4px;
+  }
+
+  /* 右カラムは幅が限られるので、詳細は画面の高さの半分までに抑える。 */
+  .trophies__detail {
+    max-height: 50vh;
+    border-radius: var(--md-sys-shape-corner-large);
+  }
+
+  .panel {
+    grid-area: panel;
+    /* 縦積みのときの「画面の46%まで」ではなく、右カラムの余りを全部使う。 */
+    min-height: 0;
+    max-height: none;
+    margin: 8px 8px 8px 4px;
+    padding-bottom: 12px;
+    border-radius: var(--md-sys-shape-corner-extra-large);
+  }
+}

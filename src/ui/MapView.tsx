@@ -171,6 +171,24 @@ export function MapView({
   const svgRef = useRef<SVGSVGElement>(null);
 
   /**
+   * 地図の表示サイズ（CSS ピクセル）。駅の丸やラベルの大きさを
+   * 「画面上で何ピクセルか」で決めるために要る。
+   * 初期値は測る前の一瞬だけ使われる、スマホ縦を想定した値。
+   */
+  const [boxPx, setBoxPx] = useState({ w: 390, h: 520 });
+
+  useEffect(() => {
+    const el = svgRef.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const rect = entries[0]?.contentRect;
+      if (rect && rect.width > 0 && rect.height > 0) setBoxPx({ w: rect.width, h: rect.height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  /**
    * 収めたい範囲を、画面と同じ縦横比の viewBox に広げる。
    * SVG は viewBox 全体が収まるように縮小するので、比率を合わせておかないと
    * 短い辺に合わせて縮み、長い辺の端が画面の外に出てしまう。
@@ -278,8 +296,15 @@ export function MapView({
     });
   };
 
-  // 表示スケールに応じた大きさ。ズームしても見た目が一定になる。
-  const unit = view.w / 100;
+  /*
+   * 駅の丸やラベルの基準サイズ。
+   *
+   * viewBox に対する割合（view.w / 100）で決めると、見た目の大きさが
+   * 地図の表示幅に比例してしまい、PC ではラベルが巨大になる。
+   * 1ピクセルあたりのワールド単位から逆算して、画面上のピクセル数で揃える。
+   * 係数 3.9 は 390px 幅のときに従来と同じ大きさになる値。
+   */
+  const unit = (view.w / boxPx.w) * 3.9;
   const fontSize = unit * 2.6;
   const targetSet = useMemo(() => new Set(targets), [targets]);
 
