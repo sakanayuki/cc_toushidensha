@@ -365,6 +365,13 @@ button {
   margin-bottom: 10px;
 }
 
+/* サイコロを添える見出し。 */
+.panel__title--dice {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 .panel__list {
   display: flex;
   flex-direction: column;
@@ -398,25 +405,98 @@ button {
   animation: thinking 1.2s var(--md-sys-motion-easing-emphasized) infinite;
 }
 
-.dice-face {
-  font-size: 44px;
-  line-height: 1;
+/* ── サイコロ ── */
+
+/*
+ * CSS の 3D 変換で組んだ立方体。6枚の面を回転で貼り合わせている。
+ * 転がすときは目的の面の角度に何周か足して回すので、
+ * 止まったときに出目の面が正面を向く。
+ */
+.dice {
+  --dice-size: 56px;
+  --dice-half: 28px;
+  width: var(--dice-size);
+  height: var(--dice-size);
+  perspective: 420px;
 }
 
-@keyframes dice-roll {
+/* 投げ上げたような上下動。回転とは別のレイヤーに分けてある。 */
+.dice--tossing {
+  animation: dice-toss var(--dice-toss-duration, 1100ms)
+    var(--md-sys-motion-easing-standard);
+}
+
+@keyframes dice-toss {
   0% {
-    transform: rotate(0) scale(1);
+    transform: translateY(0) scale(1);
   }
-  55% {
-    transform: rotate(220deg) scale(1.3);
+  35% {
+    transform: translateY(-26px) scale(1.12);
+  }
+  70% {
+    transform: translateY(2px) scale(0.96);
+  }
+  85% {
+    transform: translateY(-4px) scale(1.02);
   }
   100% {
-    transform: rotate(360deg) scale(1);
+    transform: translateY(0) scale(1);
   }
 }
 
-.dice-face--rolling {
-  animation: dice-roll var(--md-sys-motion-duration-long1) var(--md-sys-motion-easing-spring-bouncy);
+/* 結果表示に添える小さいサイコロ。 */
+.dice--small {
+  --dice-size: 34px;
+  --dice-half: 17px;
+  flex: 0 0 auto;
+}
+
+.dice--small .dice__face {
+  border-radius: 7px;
+  padding: 3px;
+}
+
+.dice--small .dice__pip,
+.dice--small .dice__pip--empty {
+  width: 6px;
+  height: 6px;
+}
+
+.dice__cube {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  transform-style: preserve-3d;
+  transition-property: transform;
+  transition-timing-function: cubic-bezier(0.16, 0.9, 0.3, 1);
+}
+
+.dice__face {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  grid-template-rows: repeat(3, 1fr);
+  place-items: center;
+  padding: 5px;
+  border-radius: 10px;
+  background: var(--md-sys-color-surface);
+  border: 1px solid var(--md-sys-color-outline-variant);
+  box-shadow: inset 0 0 8px rgb(0 0 0 / 12%);
+  backface-visibility: hidden;
+}
+
+.dice__pip {
+  width: 9px;
+  height: 9px;
+  border-radius: var(--md-sys-shape-corner-full);
+  background: var(--md-sys-color-on-surface);
+}
+
+/* 目の無いマス。グリッドの位置を揃えるためだけに置く。 */
+.dice__pip--empty {
+  width: 9px;
+  height: 9px;
 }
 
 /* ── セットアップ・結果画面 ── */
@@ -576,6 +656,29 @@ button {
   cursor: pointer;
   color: var(--md-sys-color-on-surface-variant);
   list-style-position: inside;
+}
+
+/*
+ * おすすめの開始駅。今回のトロフィー5枚に向いている駅を強調する。
+ * 枠線で示すのは、押せない／選ばれているといった状態と混同されないため。
+ */
+.md-list-item--recommended {
+  background: var(--md-sys-color-primary-container);
+  color: var(--md-sys-color-on-primary-container);
+  outline: 2px solid var(--md-sys-color-primary);
+  outline-offset: -2px;
+}
+
+.md-list-item--recommended .md-list-item__supporting,
+.md-list-item--recommended .md-list-item__trailing {
+  color: var(--md-sys-color-on-primary-container);
+  opacity: 0.85;
+}
+
+.md-chip--recommended {
+  background: var(--md-sys-color-primary);
+  color: var(--md-sys-color-on-primary);
+  font-weight: var(--md-sys-typescale-weight-emphasized);
 }
 
 /* 新幹線はその駅に停まるときだけ現れる4つ目の選択肢なので、色で別格だと分かるようにする。 */

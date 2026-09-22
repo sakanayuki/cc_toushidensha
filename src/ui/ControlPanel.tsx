@@ -14,9 +14,12 @@ import {
 } from '../data/types';
 import type { GameData, Industry, StationId, TrainType } from '../data/types';
 import { findReachable } from '../engine/graph';
+import { scoreStartStations } from '../engine/recommend';
+import { TROPHY_DEFS } from '../engine/trophy';
 import type { Graphs } from '../engine/graph';
-import { currentPlayer, investableIndustries, sortedOptions } from '../engine/state';
-import type { GameState } from '../engine/types';
+import { currentPlayer, investableIndustries, rollDice, sortedOptions } from '../engine/state';
+import type { GameState, TrophyId } from '../engine/types';
+import { DICE_ROLL_MS, Dice } from './Dice';
 import { IndustryChoice, isBest3 } from './IndustryCard';
 
 interface Props {
@@ -27,7 +30,8 @@ interface Props {
   busy: boolean;
   onChooseStart: (id: StationId) => void;
   onChooseType: (type: TrainType) => void;
-  onRoll: () => void;
+  /** 転がし終えた時点で、確定済みの次の状態を渡す。 */
+  onRoll: (next: GameState) => void;
   onChooseDest: (id: StationId) => void;
   onChooseIndustry: (id: string) => void;
 }
@@ -99,7 +103,8 @@ function industriesOf(data: GameData, id: StationId): Industry[] {
 export function ControlPanel(props: Props) {
   const { state, data, graphs, selectableTypes, busy } = props;
   const player = currentPlayer(state);
-  const [rolling, setRolling] = useState(false);
+  /** 転がっているサイコロの出目。止まっているあいだは null。 */
+  const [rolling, setRolling] = useState<number | null>(null);
 
   if (busy) {
     return (
@@ -124,26 +129,43 @@ export function ControlPanel(props: Props) {
   }
 
   switch (state.phase) {
-    case 'chooseStart':
+    case 'chooseStart': {
+      // 今回の5枚に向いた駅を助言する。地理を知らなくても選べるように。
+      const scores = new Map(
+        scoreStartStations(data, graphs, state.trophies, state.turns).map((x) => [
+          x.stationId,
+          x,
+        ]),
+      );
       return (
         <div className="panel">
           <div className="panel__title">
-            {player.name} の開始駅を選んでください（他の人と同じ駅でも構いません）
+            {player.name} の開始駅を選んでください（地図の光っている駅もタップできます）
           </div>
           <PanelList>
             {data.startStationIds.map((id) => {
               const station = data.stations[id];
               if (!station) return null;
               const list = industriesOf(data, id);
+              const score = scores.get(id);
               return (
                 <button
                   type="button"
                   key={id}
-                  className="md-list-item md-ripple"
+                  className={
+                    score?.recommended
+                      ? 'md-list-item md-list-item--recommended md-ripple'
+                      : 'md-list-item md-ripple'
+                  }
                   onClick={() => props.onChooseStart(id)}
                 >
                   <div className="md-list-item__headline">
                     <span>{station.name}</span>
+                    {score?.recommended && (
+                      <span className="md-chip md-chip--small md-chip--recommended">
+                        おすすめ · {TROPHY_DEFS[score.reason as TrophyId]?.shortName}
+                      </span>
+                    )}
                     <span className="md-list-item__trailing">{station.pref}</span>
                   </div>
                   <div className="md-list-item__supporting">
@@ -155,6 +177,7 @@ export function ControlPanel(props: Props) {
           </PanelList>
         </div>
       );
+    }
 
     case 'chooseType': {
       const from = player.stationId as StationId;
@@ -215,16 +238,25 @@ export function ControlPanel(props: Props) {
             type="button"
             className="md-fab md-ripple"
             style={{ width: '100%' }}
+            aria-label="サイコロを振る"
             onClick={() => {
-              setRolling(true);
+              /*
+               * 出目をここで確定させてから転がす。
+               * rollDice は純粋関数なので、先に呼んで出目を知り、
+               * 転がり終わったあとに「まさにその結果」を反映すれば、
+               * 乱数を二度引くことにはならない。
+               * こうしないとサイコロが出目と無関係な面で止まってしまう。
+               */
+              const next = rollDice(state, graphs);
+              setRolling(next.dice ?? 1);
               window.setTimeout(() => {
-                setRolling(false);
-                props.onRoll();
-              }, 450);
+                setRolling(null);
+                props.onRoll(next);
+              }, DICE_ROLL_MS);
             }}
-            disabled={rolling}
+            disabled={rolling !== null}
           >
-            <span className={rolling ? 'dice-face dice-face--rolling' : 'dice-face'}>🎲</span>
+            <Dice value={rolling} />
           </button>
         </div>
       );
@@ -234,11 +266,15 @@ export function ControlPanel(props: Props) {
       const short = options[0]?.steps !== state.dice;
       return (
         <div className="panel">
-          <div className="panel__title">
-            {state.dice} が出ました。
-            {short
-              ? `この先は行き止まりのため、${options[0]?.steps}駅先までです`
-              : '降りる駅を選んでください（地図の光っている駅もタップできます）'}
+          {/* 転がったサイコロの目をそのまま残す。結果と転がりが結びつくように。 */}
+          <div className="panel__title panel__title--dice">
+            <Dice value={state.dice ?? null} spin={false} small />
+            <span>
+              {state.dice} が出ました。
+              {short
+                ? `この先は行き止まりのため、${options[0]?.steps}駅先までです`
+                : '降りる駅を選んでください（地図の光っている駅もタップできます）'}
+            </span>
           </div>
           <PanelList>
             {options.map((option) => {

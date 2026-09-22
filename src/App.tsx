@@ -17,7 +17,6 @@ import {
   chooseType,
   createGame,
   currentPlayer,
-  rollDice,
   selectableTypes as selectableTypesOf,
 } from './engine/state';
 import { computeStandings } from './engine/trophy';
@@ -138,10 +137,27 @@ export function App() {
   const standings = computeStandings(game, data);
   const types = selectableTypesOf(game, graphs);
   const busy = anim !== null;
+
+  /*
+   * 地図で光らせる駅。
+   * 開始駅を選ぶ場面でも光らせる。候補が7駅あっても、
+   * それぞれが日本のどこなのか分からないまま選ばされることになるため。
+   */
   const targets =
-    !busy && game.phase === 'chooseDest' && !player.isCPU
-      ? (game.options ?? []).map((o) => o.stationId)
-      : [];
+    busy || player.isCPU
+      ? []
+      : game.phase === 'chooseDest'
+        ? (game.options ?? []).map((o) => o.stationId)
+        : game.phase === 'chooseStart'
+          ? data.startStationIds
+          : [];
+
+  const onSelectStation =
+    game.phase === 'chooseDest'
+      ? (id: StationId) => applyState(chooseDestination(game, id, data))
+      : game.phase === 'chooseStart'
+        ? (id: StationId) => applyState(chooseStart(game, id))
+        : undefined;
 
   return (
     <div className="app">
@@ -175,9 +191,7 @@ export function App() {
         animating={
           anim ? { playerIndex: anim.playerIndex, stationId: anim.path[anim.step] as StationId } : null
         }
-        onSelect={
-          targets.length > 0 ? (id) => applyState(chooseDestination(game, id, data)) : undefined
-        }
+        onSelect={targets.length > 0 ? onSelectStation : undefined}
       />
 
       <ControlPanel
@@ -188,7 +202,7 @@ export function App() {
         busy={busy}
         onChooseStart={(id: StationId) => applyState(chooseStart(game, id))}
         onChooseType={(type: TrainType) => applyState(chooseType(game, type))}
-        onRoll={() => applyState(rollDice(game, graphs))}
+        onRoll={(next) => applyState(next)}
         onChooseDest={(id: StationId) => applyState(chooseDestination(game, id, data))}
         onChooseIndustry={(id: string) => applyState(chooseIndustry(game, id, data))}
       />
