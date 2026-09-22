@@ -39,6 +39,10 @@ LINE_MATCH = {
     'hanwa': ['JR阪和線(天王寺～和歌山)'],
     'nankai': ['南海本線'],
     'sanyo-shinkansen': ['山陽新幹線'],
+    'midosuji': ['OsakaMetro御堂筋線'],
+    'hankyu-kyoto': ['阪急京都本線'],
+    'hankyu-senri': ['阪急京都本線', '阪急千里線'],
+    'kinokuni': ['JR紀勢本線(きのくに線)(新宮～和歌山)', 'JR紀勢本線(和歌山～和歌山市)'],
 }
 
 

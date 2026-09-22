@@ -437,4 +437,144 @@ export const LINES: Line[] = [
       shinkansen: [],
     },
   },
+  {
+    id: 'midosuji',
+    name: '御堂筋線',
+    operator: 'Osaka Metro',
+    // 実際のラインカラーは赤だが、真上を走る大阪環状線（#dc2626）と見分けがつかない。
+    // 地下鉄だと一目で分かるよう、鉄道各線とは系統の違う灰色にしている。
+    color: '#475569',
+    // 梅田・新大阪・なんば・天王寺・中津・長居は他線と同じ駅として扱う。
+    // 地下鉄なので優等列車は走らない。乗り入れた先は普通でしか動けない。
+    stations: [
+      'mid-esaka', 'mid-higashimikuni', 'shinosaka', 'mid-nishinakajima', 'hq-nakatsu', 'osaka',
+      'mid-yodoyabashi', 'mid-honmachi', 'mid-shinsaibashi', 'nankai-namba', 'mid-daikokucho',
+      'mid-dobutsuenmae', 'tennoji', 'mid-showacho', 'mid-nishitanabe', 'nagai', 'mid-abiko',
+      'mid-kitahanada', 'mid-shinkanaoka', 'mid-nakamozu',
+    ],
+    stops: {
+      local: [
+        'mid-esaka', 'mid-higashimikuni', 'shinosaka', 'mid-nishinakajima', 'hq-nakatsu',
+        'osaka', 'mid-yodoyabashi', 'mid-honmachi', 'mid-shinsaibashi', 'nankai-namba',
+        'mid-daikokucho', 'mid-dobutsuenmae', 'tennoji', 'mid-showacho', 'mid-nishitanabe',
+        'nagai', 'mid-abiko', 'mid-kitahanada', 'mid-shinkanaoka', 'mid-nakamozu',
+      ],
+      express: [],
+      ltd: [],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'hankyu-kyoto',
+    name: '阪急京都本線',
+    operator: '阪急電鉄',
+    color: '#9d174d',
+    // 起点の大阪梅田は大阪、十三は阪急神戸本線と同じ駅。
+    // 中津は神戸線・宝塚線のホームしか無く京都線の電車は停まらないので、入れていない。
+    stations: [
+      'osaka', 'hq-juso', 'hk-minamikata', 'hk-sozenji', 'hk-awaji', 'hk-kamishinjo',
+      'hk-aikawa', 'hk-shojaku', 'hk-settsushi', 'hk-minamiibaraki', 'hk-ibarakishi',
+      'hk-sojiji', 'hk-tonda', 'hk-takatsukishi', 'hk-kanmaki', 'hk-minase', 'hk-oyamazaki',
+      'hk-nishiyama', 'hk-nagaokatenjin', 'hk-nishimuko', 'hk-higashimuko', 'hk-rakusaiguchi',
+      'hk-katsura', 'hk-nishikyogoku', 'hk-saiin', 'hk-omiya', 'hk-karasuma', 'hk-kawaramachi',
+    ],
+    stops: {
+      local: [
+        'osaka', 'hq-juso', 'hk-minamikata', 'hk-sozenji', 'hk-awaji', 'hk-kamishinjo',
+        'hk-aikawa', 'hk-shojaku', 'hk-settsushi', 'hk-minamiibaraki', 'hk-ibarakishi',
+        'hk-sojiji', 'hk-tonda', 'hk-takatsukishi', 'hk-kanmaki', 'hk-minase', 'hk-oyamazaki',
+        'hk-nishiyama', 'hk-nagaokatenjin', 'hk-nishimuko', 'hk-higashimuko', 'hk-rakusaiguchi',
+        'hk-katsura', 'hk-nishikyogoku', 'hk-saiin', 'hk-omiya', 'hk-karasuma', 'hk-kawaramachi',
+      ],
+      // 急行・準急の和集合。
+      express: [
+        'osaka', 'hq-juso', 'hk-awaji', 'hk-minamiibaraki', 'hk-ibarakishi', 'hk-takatsukishi',
+        'hk-nagaokatenjin', 'hk-katsura', 'hk-saiin', 'hk-omiya', 'hk-karasuma',
+        'hk-kawaramachi',
+      ],
+      // 京都線の特急。
+      ltd: [
+        'osaka', 'hq-juso', 'hk-awaji', 'hk-ibarakishi', 'hk-takatsukishi', 'hk-nagaokatenjin',
+        'hk-katsura', 'hk-karasuma', 'hk-kawaramachi',
+      ],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'hankyu-senri',
+    name: '阪急千里線',
+    operator: '阪急電鉄',
+    color: '#be185d',
+    // 大阪梅田から十三・淡路を経て北千里へ抜ける直通の系統としてまとめる。
+    // 淡路以南は京都本線と線路を共有する。
+    stations: [
+      'osaka', 'hq-juso', 'hk-minamikata', 'hk-sozenji', 'hk-awaji', 'hk-shimoshinjo',
+      'hk-suita', 'hk-toyotsu', 'hk-kandaimae', 'hk-senriyama', 'hk-minamisenri', 'hk-yamada',
+      'hk-kitasenri',
+    ],
+    stops: {
+      local: [
+        'osaka', 'hq-juso', 'hk-minamikata', 'hk-sozenji', 'hk-awaji', 'hk-shimoshinjo',
+        'hk-suita', 'hk-toyotsu', 'hk-kandaimae', 'hk-senriyama', 'hk-minamisenri', 'hk-yamada',
+        'hk-kitasenri',
+      ],
+      // 直通の準急は淡路より北では各駅に停まる。名前は優等でも実態は各停。
+      express: [
+        'osaka', 'hq-juso', 'hk-minamikata', 'hk-sozenji', 'hk-awaji', 'hk-shimoshinjo',
+        'hk-suita', 'hk-toyotsu', 'hk-kandaimae', 'hk-senriyama', 'hk-minamisenri', 'hk-yamada',
+        'hk-kitasenri',
+      ],
+      // 千里線に特急は走っていない。
+      ltd: [],
+      shinkansen: [],
+    },
+  },
+  {
+    id: 'kinokuni',
+    name: 'きのくに線',
+    operator: 'JR西日本',
+    // 和歌山で南海本線（#0d9488）と並ぶので、緑側にずらして見分けられるようにする。
+    color: '#166534',
+    // 紀勢本線の新宮〜和歌山（きのくに線）に、和歌山〜和歌山市の区間を足した系統。
+    // 和歌山で阪和線と、和歌山市で南海本線と同じ駅を共有する。
+    stations: [
+      'ki-shingu', 'ki-miwasaki', 'ki-kiisano', 'ki-ukui', 'ki-nachi', 'ki-kiitenma',
+      'ki-kiikatsuura', 'ki-yukawa', 'ki-taiji', 'ki-shimosato', 'ki-kiiuragami', 'ki-kiitahara',
+      'ki-koza', 'ki-kiihime', 'ki-kushimoto', 'ki-kiiarida', 'ki-tanami', 'ki-tako',
+      'ki-wabuka', 'ki-esumi', 'ki-mirozu', 'ki-susami', 'ki-kiihiki', 'ki-tsubaki',
+      'ki-kiitonda', 'ki-shirahama', 'ki-asso', 'ki-kiishinjo', 'ki-kiitanabe', 'ki-haya',
+      'ki-minabe', 'ki-iwashiro', 'ki-kirime', 'ki-inami', 'ki-inahara', 'ki-wasa', 'ki-dojoji',
+      'ki-gobo', 'ki-kiiuchihara', 'ki-kiiyura', 'ki-hirokawabeach', 'ki-yuasa', 'ki-fujinami',
+      'ki-kiimiyahara', 'ki-minoshima', 'ki-hatsushima', 'ki-shimotsu', 'ki-kamogo',
+      'ki-shimizuura', 'ki-kainan', 'ki-kuroe', 'ki-kimiidera', 'ki-miyamae', 'wakayama',
+      'ki-kiwa', 'nankai-wakayamashi',
+    ],
+    stops: {
+      local: [
+        'ki-shingu', 'ki-miwasaki', 'ki-kiisano', 'ki-ukui', 'ki-nachi', 'ki-kiitenma',
+        'ki-kiikatsuura', 'ki-yukawa', 'ki-taiji', 'ki-shimosato', 'ki-kiiuragami',
+        'ki-kiitahara', 'ki-koza', 'ki-kiihime', 'ki-kushimoto', 'ki-kiiarida', 'ki-tanami',
+        'ki-tako', 'ki-wabuka', 'ki-esumi', 'ki-mirozu', 'ki-susami', 'ki-kiihiki', 'ki-tsubaki',
+        'ki-kiitonda', 'ki-shirahama', 'ki-asso', 'ki-kiishinjo', 'ki-kiitanabe', 'ki-haya',
+        'ki-minabe', 'ki-iwashiro', 'ki-kirime', 'ki-inami', 'ki-inahara', 'ki-wasa',
+        'ki-dojoji', 'ki-gobo', 'ki-kiiuchihara', 'ki-kiiyura', 'ki-hirokawabeach', 'ki-yuasa',
+        'ki-fujinami', 'ki-kiimiyahara', 'ki-minoshima', 'ki-hatsushima', 'ki-shimotsu',
+        'ki-kamogo', 'ki-shimizuura', 'ki-kainan', 'ki-kuroe', 'ki-kimiidera', 'ki-miyamae',
+        'wakayama', 'ki-kiwa', 'nankai-wakayamashi',
+      ],
+      // 紀州路快速・区間快速など。和歌山市への区間は普通しか走らない。
+      express: [
+        'ki-shingu', 'ki-kiikatsuura', 'ki-taiji', 'ki-kushimoto', 'ki-susami', 'ki-shirahama',
+        'ki-kiitanabe', 'ki-minabe', 'ki-inami', 'ki-gobo', 'ki-yuasa', 'ki-fujinami',
+        'ki-minoshima', 'ki-kainan', 'ki-kimiidera', 'wakayama',
+      ],
+      // くろしお。和歌山から先は阪和線に入り、天王寺・大阪へ抜ける。
+      ltd: [
+        'ki-shingu', 'ki-kiikatsuura', 'ki-taiji', 'ki-kushimoto', 'ki-susami', 'ki-shirahama',
+        'ki-kiitanabe', 'ki-minabe', 'ki-inami', 'ki-gobo', 'ki-yuasa', 'ki-fujinami',
+        'ki-minoshima', 'ki-kainan', 'wakayama',
+      ],
+      shinkansen: [],
+    },
+  },
 ];

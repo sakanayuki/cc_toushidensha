@@ -162,13 +162,16 @@ describe('実データでの移動', () => {
     const lines = GAME_DATA.lines.filter((l) => l.stations.includes('osaka'));
     expect(lines.map((l) => l.id).sort()).toEqual([
       'hankyu-kobe',
+      'hankyu-kyoto',
+      'hankyu-senri',
       'hanshin',
+      'midosuji',
       'osaka-loop',
       'tokaido',
     ]);
-    // 普通列車のグラフでも、その4方向すべてに出られる。
+    // 普通列車のグラフでも、その全路線に出られる。
     const edges = graphs.local.get('osaka') ?? [];
-    expect(new Set(edges.map((e) => e.lineId)).size).toBe(4);
+    expect(new Set(edges.map((e) => e.lineId)).size).toBe(lines.length);
   });
 
   it('大阪から三宮へ JR・阪急・阪神の3経路で行ける', () => {
